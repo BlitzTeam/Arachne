@@ -3,16 +3,16 @@ import math
 
 class ServoMotion(object):
 	def __init__(self, amplitude, period, center):
-		self.amplitude = amplitude
-		self.period = period
-		self.center = center
+		self.amplitude = float(amplitude)
+		self.period = float(period)
+		self.center = float(center)
 		self.motionTimer = Timer()
 
 	def start(self):
 		self.motionTimer.start()
 
 	def currentPosition(self):
-		return math.sin(self.motionTimer.elapsedTime() * self.period / math.pi) * self.amplitude + self.center
+		return math.sin(self.motionTimer.elapsedTime() * 2 * math.pi / self.period) * (self.amplitude / 2) + self.center
 
 
 
