@@ -10,6 +10,9 @@ class LinearMover(object):
 
 
 	def run(self):
+		for mt in self.motions:
+			mt.start()
+
 		for m in self.motors:
 			m.compliant = True
 

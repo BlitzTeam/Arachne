@@ -14,6 +14,19 @@ class ServoMotion(object):
 	def currentPosition(self):
 		return math.sin(self.motionTimer.elapsedTime() * 2 * math.pi / self.period) * (self.amplitude / 2) + self.center
 
+class SpiderMotion(object):
+	"motions = array of ServoMotion"
+	def __init__(self, motions):
+		self.motions = 	motions
+
+	def start(self):
+		for m in self.motions:
+			m.start
+
+
+
+		
+
 
 
 
