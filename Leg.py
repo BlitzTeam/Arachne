@@ -9,11 +9,14 @@ class Leg:
 	b = 5.0
 	c = 7.0
 
-	def __init__(self, servo_1, servo_2, servo_3):
-		self.motors = (servo_1, servo_2, servo_3)
+	def __init__(self, orientation, x, y, servo_up, servo_middle, servo_down):
+		self.orientation = orientation
+		self.x = x
+		self.y = y
+		self.motors = (servo_up, servo_middle, servo_down)
 
-	def getAngle(self, id_motor):
-		return self.motors[id_motor].position - self.origins[id_motor]
+	#def getAngle(self, id_motor):
+		#return self.motors[id_motor].position - self.origins[id_motor]
 		
 	@staticmethod
 	def angleToPosition(alpha, beta, gamma):
