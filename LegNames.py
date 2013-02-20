@@ -1,2 +1,2 @@
 class LegNames(object):
-	FrontLeft, FrontRight, MiddleLeft, MiddleRight, BackLeft, BackRight = range(6)
+	FrontRight, MiddleRight, BackRight, BackLeft, MiddleLeft, FrontLeft = range(6)
