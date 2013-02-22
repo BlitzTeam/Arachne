@@ -8,7 +8,7 @@ def initPopulation(count = 100):
 	maxAmplitude = 1.0
 
 	for i in range(count):
-		pop.append(ServoMotion(random.uniform(), random.uniform(), random.uniform()))
+		pop.append(ServoMotion(random.random(), random.random(), random.random()))
 
 	return pop
 
@@ -25,17 +25,18 @@ def fitnessFunction(gene):
 def evolve(pop, res):
 	generation = zip(pop, res)
 	generation.sort(key=operator.itemgetter(1))
+	#print(generation)
 	newGeneration = []
 	weightSum = sum([j for i,j in generation])
 
 	for i in range(len(pop)):
-		newGeneration.append(mutate(weightedRandomChoice(generation, weightSum), weightedRandomChoice(generation, weightSum))
+		newGeneration.append(mutate(weightedRandomChoice(generation, weightSum), weightedRandomChoice(generation, weightSum)))
 
 	return newGeneration
 
-def weightedRandomChoice(generation, weightSum):	
+def weightedRandomChoice(generation, weightSum):
 	rand = random.random() * weightSum
-	for j in pop:
+	for j in generation:
 		rand -= j[1]
 		if rand < 0:
 			return j
@@ -55,9 +56,10 @@ if __name__ == '__main__':
 	populationCount = 1000
 
 	pop = initPopulation(populationCount)
-	res = evaluate(population)
+	res = evaluate(pop)
 
 	for i in range(generationCount):
+		print("Generation #%d" % i)
 		pop = evolve(pop, res)
 		res = evaluate(pop)
 
