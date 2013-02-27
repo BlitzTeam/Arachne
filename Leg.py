@@ -31,7 +31,7 @@ class Leg:
 	@staticmethod
 	def positionToAngle(self, x, y, z):
 		pass
-
+"""
 if __name__ == "__main__":
 	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
 	a_motors = ctrl.motors[0]
@@ -47,3 +47,5 @@ if __name__ == "__main__":
 	print(leg.angleToPosition(a_motors.position,b_motors.position,c_motors.position))
 
 	print (a_motors.position,b_motors.position,c_motors.position)
+	
+"""
