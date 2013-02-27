@@ -18,6 +18,9 @@ class Leg:
 		"""
 		Moves the leg toward direction. Waits until the move is done.
 		"""
+		# move up
+		# move toward
+		#]move down
 		pass
 
 	#def getAngle(self, id_motor):
@@ -35,7 +38,38 @@ class Leg:
 			
 	@staticmethod
 	def positionToAngle(self, x, y, z):
-		pass
+		 #u = a1 + b * numpy.cos(beta) + c * numpy.cos(beta+gamma)
+		 
+		#calcul de alpha
+		u = sqrt(x**2+y**2)
+		assert(
+		if (u != 0):
+			if(u < 0):
+				signe = -1
+			else:
+				signe = 1
+			alpha = signe * 2 * numpy.arctan(y/(x+u**2))
+		else:
+			raise AssertionError("error, alpha equals 0")
+			
+			
+		#calcul de gamma
+		tmpGamma = ((u - a1)**2 + (z + a2)**2 - b**2 - c**2)/2*b*c
+		if ( ((u - a1)**2 + (z - a2)**2) <= ((b+c)**2) && ( (((u -a1)**2) + (z - a2)**2) >= ( (b+c)**2) ) ):
+			gamma = numpy.arccos(tmpGamma)
+		else:
+			raise AssertionError("error, gamma not between -1 & 1")
+		
+		#calcul de beta
+			sinBeta = ( (z-a2)*(b+c*numpy.cos(gamma)) - (u - a1) * c * numpy.sin(gamma) )/( (u-a1)**2+(z-a2)**2 )
+			cosBeta = ( (u-a1)*(b+c*numpy.cos(gamma)) - (z - a2) * c * numpy.sin(gamma) )/( (u-a1)**2+(z-a2)**2 )
+		
+		print "alpha : %f" % (alpha, )
+		print "cosBeta : " + cosBeta
+		print "sinBeta : %f" % (cosBeta, )
+		print "gamma : " + gamma
+		return [alpha, cosBeta, gamma]
+			
 """
 if __name__ == "__main__":
 	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])

@@ -3,7 +3,7 @@ import time
 import math
 
 class ServoMotion(object):
-	def __init__(self, amplitude, period, center, offset = 0):
+	def __init__(self, amplitude, period, center, offset = 0.0):
 		self.amplitude = float(amplitude)
 		self.period = float(period)
 		self.center = float(center)
@@ -14,7 +14,7 @@ class ServoMotion(object):
 		self.motionTimer.start()
 
 	def currentPosition(self):
-		return math.sin((self.motionTimer.elapsedTime() * 2 * math.pi + self.offset) / self.period) * (self.amplitude / 2) + self.center
+		return math.sin((self.motionTimer.elapsedTime() * 2 * math.pi + self.offset * self.period) / self.period) * (self.amplitude / 2) + self.center
 
 class SpiderMotion(object):
 	"motions = array of ServoMotion"
