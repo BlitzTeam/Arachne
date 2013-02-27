@@ -2,7 +2,6 @@ import numpy
 import sys, time
 import pydyn.dynamixel as dyn
 
-
 class Leg:
 	a1 = 4.9
 	a2 = -1.4
@@ -11,9 +10,15 @@ class Leg:
 
 	def __init__(self, orientation, x, y, servo_up, servo_middle, servo_down):
 		self.orientation = orientation
-		self.x = x
-		self.y = y
+		self.x = x # top down view
+		self.y = y # top down view
 		self.motors = (servo_up, servo_middle, servo_down)
+
+	def moveToward(self, direction):
+		"""
+		Moves the leg toward direction. Waits until the move is done.
+		"""
+		pass
 
 	#def getAngle(self, id_motor):
 		#return self.motors[id_motor].position - self.origins[id_motor]
@@ -26,7 +31,7 @@ class Leg:
 								Leg.a2 + Leg.b * numpy.sin(beta) +  Leg.c * numpy.cos(beta + gamma))
 		else:
 			rel = angleToPosition(alpha, beta, gamma, True)
-			return ()
+			return () # TODO: Implementation
 			
 	@staticmethod
 	def positionToAngle(self, x, y, z):
