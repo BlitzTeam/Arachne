@@ -42,7 +42,7 @@ class Leg:
 		 #u = a1 + b * numpy.cos(beta) + c * numpy.cos(beta+gamma)
 		 
 		#calcul de alpha
-		u = math.sqrt(x**2+y**2)
+		u = math.sqrt(x**2 + y**2)
 		if (u != 0):
 			if(u < 0):
 				signe = -1
