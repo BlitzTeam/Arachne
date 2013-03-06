@@ -11,5 +11,10 @@ def configLegs(motors, simulator = True):
 					Leg(9 * math.pi / 6, 0, 0, Servo(motors[6]), Servo(motors[7]), Servo(motors[8])),
 					Leg(11 * math.pi / 6, 0, 0, Servo(motors[3]), Servo(motors[4]), Servo(motors[5])))
 	
-	return configLegs(motors, True) #TODO: Implement this case
+	return (		Leg(0.0, 2.6, 3.3, Servo(motors[0]), Servo(motors[1]), Servo(motors[2])), 
+					Leg(math.pi / 2, 4.2, 0, Servo(motors[15]), Servo(motors[16]), Servo(motors[17])), 
+					Leg(math.pi, 2.6, -3.3, Servo(motors[12]), Servo(motors[13]), Servo(motors[14])), 
+					Leg(math.pi, -2.8, -3.3, Servo(motors[9]), Servo(motors[10]), Servo(motors[11])),
+					Leg(3 * math.pi / 2, -4.3, 0, Servo(motors[6]), Servo(motors[7]), Servo(motors[8])),
+					Leg(0.0, -2.8, 3.3, Servo(motors[3]), Servo(motors[4]), Servo(motors[5])))
 
