@@ -9,7 +9,7 @@ class Leg:
 	b = 5.0
 	c = 7.0
 
-	def __init__(self, orientation, x, y, servo_up, servo_middle, servo_down):
+	def __init__(self, orientation = 1, x = 0, y = 0, servo_up, servo_middle, servo_down):
 		self.orientation = orientation
 		self.x = x # top down view
 		self.y = y # top down view
