@@ -12,7 +12,7 @@ def config():
     #Limitation vitesse(speed) et force(torque):
     for m in ctrl.motors:
         m.compliant = False
-        m.max_torque = 50
+        m.max_torque = 60
         m.speed = 30
 
 
@@ -59,8 +59,34 @@ def repos():
 		if tabPositions[m.id-1]>0 :
 	    	m.position = tabPositions[m.id-1]
 	'''
+
 	l = configLegs(ctrl.motors, False);
 	s = Spider(l)
+	raw_input()
+
+	#patte = s.getLeg(0)	
+	#atp = patte.getAngle(50,50,50)
+	#print(atp)
+
+	#patte.setAngleMotor(0, atp[0])
+	#patte.setAngleMotor(1, atp[1])
+	#patte.setAngleMotor(2, atp[2])
+	
+
+	#for i in range(6):
+		#s.getLeg(i).setAngle(150,150,150)
+	#angles = patte.getAngle(x, y, z)
+	#print("Angles pour ({}, {}, {}) = {}", x, y, z, angles)
+	#raw_input()
+	#patte.setPositionPatte(x, y, z)
+	#s.move(0, 5)
+
+	while (True):
+		time.sleep(0.50)
+		print('=========================================================')
+		for i in range(3):
+			print(int(s.getLeg(0).motors[i].getPosition()))
+
 	'''
 	s.makeCompliant(True)
 	print("Mettez l'araignee dans la position initiale voulue")
@@ -71,8 +97,7 @@ def repos():
 	s.makeCompliant(False)
 	s.goToStartPosition()
 	raw_input()
-	'''
-
+'''
 if __name__ == "__main__":
    # config()
     repos()
