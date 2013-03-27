@@ -24,7 +24,7 @@ ctrl.start_sim()
 
 for m in ctrl.motors:
 	m.compliant = False
-	print m.present_position
+	print m.position
 	m.position = 0
 
 
@@ -34,5 +34,5 @@ raw_input()
 
 #print("position " ,s.getLeg(1).getPosition())
 for m in ctrl.motors:
-	print m.present_position
+	print m.position
 

@@ -1,0 +1,66 @@
+        a1 = 50
+        a2 = -20
+        b = 65
+        c = 90
+        
+        alpha0 = degToRad(150)
+        beta0 = degToRad(175)
+        gamma0 = degToRad(90)
+        #Place le bout de patte a la position [x,y,z] passee en parametres en fonction du debut de la patte
+        #(Modele inverse)
+        def setPositionPatte(self,x,y,z):
+                mot = self.getAngle(x, y, z)
+                if(mot == None):
+                        print("ERROR : Position impossible")
+                        return
+                for i in range(3): 
+                        if mot[i] % 360 > 300:
+                                mot[i] = 300
+                        self.setMotor(i,mot[i] % 360)
+        #Recupere les angles [alpha,beta,gamma] en degres des moteurs a appliquer pour deplacer le bout de la patte a la position [x,y,z] passee en parametres
+        #(Calcul du modele inverse)
+        def getAngle(self,x, y, z):
+                u = math.sqrt(x * x + y * y)
+                if(u == 0):
+                        alpha = degToRad(150 - self.alpha0) # valeur arbitraire car infinite de possibilite
+                else:
+                        alpha = math.atan(y / x)
+                        if( abs((alpha % math.pi) - (math.pi / 2)) < 0.00001):
+                                u = y / math.sin(alpha)
+                        else:
+                                u = x / math.cos(alpha)
+                #print u
+                
+                up = u - self.a1
+                zp = z - self.a2
+                
+                if(up**2 + zp**2 <= (self.b + self.c)**2 and up**2 + zp**2 >= (self.b - self.c)**2):
+                        cosGamma = (up**2 + zp**2 - self.b**2 - self.c**2) / (2*self.b*self.c)
+                        absGamma = math.acos(cosGamma)
+                        #print absGamma
+                else:
+                        return None
+                gamma = -absGamma
+                sinGamma = -math.sqrt(1 - cosGamma ** 2)
+                #absBeta = math.acos(((u - self.a1) * (self.b + self.c * cosGamma) + (z - self.a2) * self.c * sinGamma) / ((u - self.a1)**2 + (z - self.a2)**2))
+                sinBeta = ((z - self.a2) * (self.b + self.c * cosGamma) - (u - self.a1) * self.c * sinGamma) / ((u - self.a1)**2 + (z - self.a2)**2)
+                cosBeta = ((u - self.a1) * (self.b + self.c * cosGamma) + ((z - self.a2) * self.c * sinGamma)) / ((u - self.a1)**2 + (z - self.a2)**2)
+                beta = math.atan2(sinBeta, cosBeta)
+                
+                #print beta
+                
+                # signe de beta
+                """if sinBeta < 0:
+                        beta = -absBeta
+                else:
+                        beta = absBeta
+                ##"""
+                        
+                # signe de gamma
+                
+                gamma = -gamma
+                return [radToDeg(alpha + self.alpha0),
+                        radToDeg(beta + self.beta0),
+                        radToDeg(gamma + self.gamma0)]
+                        
+
