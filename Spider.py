@@ -1,10 +1,26 @@
 import math
 
 class Spider:
+	
 	def __init__(self, legs):
-		"legs = array of Leg"
+		#legs = array of Leg
 		self.legs = legs
-		
+	
+	def getLeg(self, id):
+		return self.legs[id]
+	
+	def initStartPosition(self):
+		for l in self.legs:
+			l.initStartPosition()
+
+	def goToStartPosition(self):
+		for l in self.legs:
+			l.goToStartPosition()
+
+	def makeCompliant(self, compliant = True):
+		for l in self.legs:
+			l.makeCompliant(compliant)
+
 	def move(self, angle, distance):
 		distanceWalked = 0
 		while(distance > distanceWalked):
