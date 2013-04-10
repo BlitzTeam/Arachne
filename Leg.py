@@ -22,6 +22,9 @@ class Leg:
 	def getMotor(self, id):
 		return self.motors[id]
 
+	def setAngleMotor(self, id, angle):
+		self.motors[id].setPosition(angle)
+
 	def initStartPosition(self):
 		for m in self.motors:
 			m.initStartPosition()
@@ -33,6 +36,12 @@ class Leg:
 	def makeCompliant(self, compliant = True):
 		for m in self.motors:
 			m.makeCompliant(compliant)
+
+
+	def setAngle(self, a, b, c):
+		self.setAngleMotor(0, a)
+		self.setAngleMotor(1, b)
+		self.setAngleMotor(2, c)
 
 	def moveToward(self, direction):
 		"""
@@ -85,14 +94,19 @@ class Leg:
 	#Place le bout de patte a la position [x,y,z] passee en parametres en fonction du debut de la patte
 	#(Modele inverse)
 	def setPositionPatte(self,x,y,z):
+		mot = self.getAngle(x, y, z)
+		print("fonction setPosition")
+
 		mot = self.getAngleFromPosition(x, y, z)
+
 		if(mot == None):
 			print("ERROR : Position impossible")
 			return
-		for i in range(3): 
+		for i in range(3): 			
 			if mot[i] % 360 > 300:
 				mot[i] = 300
-				self.setMotor(i,mot[i] % 360)
+			self.setAngleMotor(i,mot[i])
+			
 		#Recupere les angles [alpha,beta,gamma] en degres des moteurs a appliquer pour deplacer le bout de la patte a la position [x,y,z] passee en parametres
 		#(Calcul du modele inverse)
 
@@ -139,9 +153,12 @@ class Leg:
 
 		gamma = -gamma
 
-		return [math.degrees(alpha + self.alpha0),
-		math.degrees(beta + self.beta0),
-		math.degrees(gamma + self.gamma0)]
+		return [math.degrees(alpha + self.alpha0), math.degrees(beta + self.beta0), math.degrees(gamma + self.gamma0)]
+
+	def printNumeroMoteur(self):
+		print("Liste des moteurs")
+		for m in self.motors:
+			m.printId()
                 	
 """
 if __name__ == "__main__":
