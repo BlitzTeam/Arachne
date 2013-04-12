@@ -28,9 +28,9 @@ class Leg:
 
 	def getMotor(self, id):
 		return self.motors[id]
-
-	def setAngleMotor(self, id, angle):
-		self.motors[id].setPosition(angle)
+		
+	def getPosition(self):
+		return angleToPosition(self.motors[0].getPosition(), self.motors[1].getPosition(), self.motors[2].getPosition())
 
 	def makeCompliant(self, compliant = True):
 		for m in self.motors:

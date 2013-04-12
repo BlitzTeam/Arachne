@@ -1,6 +1,7 @@
 import math
 
 class Spider:
+	groundHeight = -60.0
 	
 	def __init__(self, legs):
 		#legs = array of Leg
@@ -16,27 +17,21 @@ class Spider:
 	
 	def getLeg(self, id):
 		return self.legs[id]
-	
-	def initStartPosition(self):
-		for l in self.legs:
-			l.initStartPosition()
 
-	def goToStartPosition(self):
+	def move(self, angle):
+		while True:
+			for i in range(1, 6, 2):
+				self.legs[i].moveToward(angle)
+			#wait for move completion
+			for i in range(0, 6, 2):
+				self.legs[i].moveToward(angle)
+			#wait for move completion
+				
+	def getLiftedLegs(self):
+		t = []
 		for l in self.legs:
-			l.goToStartPosition()
+			if l.getPosition()[2] > Spider.groundHeight:
+				t.append(l)
+		return t
 
-	def makeCompliant(self, compliant = True):
-		for l in self.legs:
-			l.makeCompliant(compliant)
-
-	def move(self, angle, distance):
-		distanceWalked = 0
-		while(distance > distanceWalked):
-			for leg in self.legs:
-				leg.moveToward(angle)
-		
-	def rotate(self, angle):
-		pass
-		
-		
 
