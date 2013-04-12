@@ -7,7 +7,7 @@ from Motion import *
 from Servo import *
 from LegNames import *
 
-pydyn.enable_vrep()
+#pydyn.enable_vrep()
 
 ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
 
@@ -15,8 +15,8 @@ legs = configLegs(ctrl.motors, True)
 
 spider = Spider(legs)
 
-for i in ctrl.motors:
-	i.compliant = False
+#for i in ctrl.motors:
+#	i.compliant = False
 
 while(True):
 	m = 0

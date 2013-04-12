@@ -20,19 +20,31 @@ ctrl.start_sim()
 #s = Spider(l)
 #print("position " ,s.getLeg(1).getPosition())
 
-
-
 for m in ctrl.motors:
 	m.compliant = False
-	print m.present_position
-	m.position = 0
+	print m.present_position_raw
+	m.position = 125
 
 
 #s.getLeg(1).goToAngle(100,100,100)
 #print("appuyez apres le mouvement pour avoir la position . . .")
 raw_input()
 
+for m in ctrl.motors:
+	m.compliant = False
+	print m.present_position_raw
+	m.position = 110
+
+raw_input()
+
+for m in ctrl.motors:
+	m.compliant = False
+	print m.present_position
+	m.position = 150
+
+raw_input()
+
 #print("position " ,s.getLeg(1).getPosition())
 for m in ctrl.motors:
-	print m.present_position
+	print m.position_raw
 
