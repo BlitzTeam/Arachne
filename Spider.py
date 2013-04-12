@@ -26,12 +26,6 @@ class Spider:
 			for i in range(0, 6, 2):
 				self.legs[i].moveToward(angle)
 			#wait for move completion
-				
-	def getLiftedLegs(self):
-		t = []
-		for l in self.legs:
-			if l.getPosition()[2] > Spider.groundHeight:
-				t.append(l)
-		return t
+
 
 

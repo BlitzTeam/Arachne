@@ -2,7 +2,6 @@ import numpy
 import sys, time
 import pydyn.dynamixel as dyn
 import math
-from inverseKinematics import *
 import pydyn
 from Config import *
 from Spider import *
@@ -32,14 +31,10 @@ class Leg:
 	def getPosition(self):
 		return angleToPosition(self.motors[0].getPosition(), self.motors[1].getPosition(), self.motors[2].getPosition())
 
-	def makeCompliant(self, compliant = True):
-		for m in self.motors:
-			m.makeCompliant(compliant)
-
 	def setAngle(self, a, b, c):
-		self.setAngleMotor(0, a)
-		self.setAngleMotor(1, b)
-		self.setAngleMotor(2, c)
+		self.motors[0].setPosition(a)
+		self.motors[1].setPosition(b)
+		self.motors[2].setPosition(c)
 				
 	def angleToPosition(self, alpha, beta, gamma, relative = True):
 		if relative == True:
@@ -77,6 +72,15 @@ class Leg:
 		print(alpha, beta, gamma)
 		return (alpha, beta + 150, 180 - gamma + 60)
 		
+	def moveToward(self, direction):
+		relativeDirection = (self.orientation + direction) % 360.0
+		reversedDirection = False
+		if (relativeDirection > (150 + 90) or relativeDirection < (150 - 90)): #if impossible direction for alpha, reverse it
+			reversedDirection = True
+			relativeDirection = (relativeDirection + 180.0) % 360.0
+			
+		#find beta and gamma with maximal math.sqrt(x**2 + y**2) for z = Spider.groundHeight and alpha = relativeDirection
+		
 if __name__ == '__main__':
 	pydyn.enable_vrep()
 	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
@@ -87,10 +91,6 @@ if __name__ == '__main__':
 	s.init()
 	
 	leg = s.getLeg(1)
-	leg.setPosition(50, 0, 0)
-	raw_input()
-	leg.setPosition(70, 0, 0)
-	raw_input()
-	leg.setPosition(90, 0, 0)
+	leg.setAngle(150,150,60)
 	raw_input()
 	
