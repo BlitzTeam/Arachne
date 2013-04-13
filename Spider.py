@@ -1,8 +1,8 @@
 import math
 
 class Spider:
-	groundHeight = -60.0
-	liftHeight = -40.0
+	groundHeight = 70.0
+	liftHeight = 40.0
 	
 	def __init__(self, legs):
 		#legs = array of Leg

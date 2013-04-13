@@ -17,23 +17,24 @@ class ServoMotion(object):
 		return math.sin((self.motionTimer.elapsedTime() * 2 * math.pi + self.offset * self.period) / self.period) * (self.amplitude / 2) + self.center
 
 class LegMotion(object):
-	def __init(self, startValues, endValues, time = 1.0):
+	def __init__(self, startValues, endValues, time = 5.0):
 		self.startValues = startValues
 		self.endValues = endValues
-		self.time
+		self.time = time
 		self.motionTimer = Timer()
+		self.start()
 	
 	def start(self):
 		self.motionTimer.start()
 		
 	def currentValues(self):
 		currentTime = self.motionTimer.elapsedTime()
-		return (extrapolate(self.startValues[0], self.endValues[0], currentTime, self.time),
-				extrapolate(self.startValues[1], self.endValues[1], currentTime, self.time),
-				extrapolate(self.startValues[2], self.endValues[2], currentTime, self.time))
+		return (LegMotion.extrapolate(self.startValues[0], self.endValues[0], currentTime, self.time),
+				LegMotion.extrapolate(self.startValues[1], self.endValues[1], currentTime, self.time),
+				LegMotion.extrapolate(self.startValues[2], self.endValues[2], currentTime, self.time))
 	
 	def isDone(self):
-		return self.motionTimer.elapsedTime() > time
+		return self.motionTimer.elapsedTime() > self.time
 		
 	@staticmethod
 	def extrapolate(startValue, endValue, currentTime, totalTime):

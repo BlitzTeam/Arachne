@@ -5,6 +5,7 @@ import math
 import pydyn
 from Config import *
 from Spider import *
+from Motion import *
 
 class Leg:
 	a1 = 49
@@ -29,13 +30,13 @@ class Leg:
 	def getMotor(self, id):
 		return self.motors[id]
 		
-	def getPosition(self):
-		return angleToPosition(self.motors[0].getPosition(), self.motors[1].getPosition(), self.motors[2].getPosition())
+	def getAngle(self):
+		return (self.motors[0].getAngle(), self.motors[1].getAngle(), self.motors[2].getAngle())
 
 	def setAngle(self, a, b, c):
-		self.motors[0].setPosition(a)
-		self.motors[1].setPosition(b)
-		self.motors[2].setPosition(c)
+		self.motors[0].setAngle(a)
+		self.motors[1].setAngle(b)
+		self.motors[2].setAngle(c)
 				
 	def angleToPosition(self, alpha, beta, gamma, relative = True):
 		if relative == True:
@@ -70,30 +71,53 @@ class Leg:
 		return (alpha, beta + 150, 180 - gamma + 60)
 		
 	def moveToward(self, direction):
-		relativeDirection = (self.orientation + direction) % 360.0
+		relativeDirection = self.orientation - direction
 		reversedDirection = False
-		if (relativeDirection > (150 + 90) or relativeDirection < (150 - 90)): #if impossible direction for alpha, reverse it
+		if (relativeDirection > 90 or relativeDirection < -90): #if impossible direction for alpha, reverse it
 			reversedDirection = True
-			relativeDirection = (relativeDirection + 180.0) % 360.0
-			
-		maxGamma = 70
-		minGamma = 150 + 70
-		alpha = relativeDirection
-		gamma = reversedDirection ? minGamma : maxGamma
-		beta = # compute beta based on alpha, gamma, z
+			relativeDirection = relativeDirection + 180.0
 		
-		self.moves.append(LegMotion(self.getPosition(), (alpha, beta, gamma)) # Schedule the lifting motion
-		self.moves.append(LegMotion(self.getPosition(), (alpha, beta, gamma)) # Schedule the forward motion
-		self.moves.append(LegMotion(self.getPosition(), (alpha, beta, gamma)) # Schedule the backward motion
+		z = Spider.groundHeight
+		maxGamma = 160
+		minGamma = 40
+		alpha = relativeDirection
+		
+		#self.moves.append(LegMotion(self.getAngle(), (alpha, beta, gamma))) # Schedule the lifting motion
+		
+		gamma = minGamma if reversedDirection else maxGamma
+		beta = Leg.computeBeta(alpha, gamma, z)
+		newValues = Leg.computeServoAngles(alpha, beta, gamma)
+		print(self.getAngle())
+		self.moves.append(LegMotion(self.getAngle(), newValues)) # Schedule the forward motion
+
+		gamma = maxGamma if reversedDirection else minGamma		
+		beta = Leg.computeBeta(alpha, gamma, z)
+		self.moves.append(LegMotion(newValues, Leg.computeServoAngles(alpha, beta, gamma))) # Schedule the backward motion
+		
+	@staticmethod
+	def computeBeta(alpha, gamma, z): #compute the beta angle according to alpha, gamma and z. This function works with theorical values
+		l = math.sqrt(Leg.b**2 + Leg.c**2 - 2 * Leg.b * Leg.c * math.cos(gamma))
+		print(l, z)
+		p = math.sqrt(l**2 - z**2)
+		o3 = math.degrees(math.acos((z**2 + l**2 - p**2) / (2 * z * l)))
+		o4 = math.degrees(math.acos((Leg.b**2 + l**2 - Leg.c**2) / (2 * Leg.b * l)))
+		return 90 - (o3 + o4)
+		
+	@staticmethod
+	def computeServoAngles(alpha, beta, gamma): #compute the real values given to the servos
+		return (alpha + 150, beta + 150, 180 - gamma + 60)
 	
 	def move(self): # move the leg according to the current self.move[0], does nothing if len(self.move) == 0
 		if len(self.moves) != 0:
 			currentMove = self.moves[0]
 			if currentMove.isDone():
 				self.moves.pop(0)
+				print("Move done")
 				if len(self.moves) != 0:
 					currentMove = self.moves[0]
 					currentMove.start()
+					print("New move loaded")
+					
 			currentValues = currentMove.currentValues()
 			self.setAngle(currentValues[0], currentValues[1], currentValues[2])
 		
@@ -108,8 +132,8 @@ if __name__ == '__main__':
 	l = configLegs(ctrl.motors)
 	s = Spider(l)
 	s.init()
-	
 	leg = s.getLeg(1)
-	leg.setAngle(150,150,60)
-	raw_input()
+	#leg.moveToward(45.0)
+	while(True):
+		print(leg.getAngle())
 	
