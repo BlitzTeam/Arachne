@@ -133,7 +133,7 @@ if __name__ == '__main__':
 	s = Spider(l)
 	s.init()
 	leg = s.getLeg(1)
-	#leg.moveToward(45.0)
-	while(True):
-		print(leg.getAngle())
-	
+	m = leg.getMotor(2)
+	m.servo_ctrl.position = 230
+	time.sleep(2.0)
+	print (m.servo_ctrl.position)
