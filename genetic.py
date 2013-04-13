@@ -28,9 +28,7 @@ def evolve(pop, res):
 	newGeneration = []
 	
 	for i in range(len(pop)):
-		ra = random.randint(0,len(pop))
-		rb = random.randint(0,len(pop))
-		newGeneration.append(mutate(generation[ra], generation[rb]))
+		newGeneration.append(mutate(random.choice(generation), random.choice(generation)))
 
 	return newGeneration
 
