@@ -2,6 +2,7 @@ import math
 
 class Spider:
 	groundHeight = -60.0
+	liftHeight = -40.0
 	
 	def __init__(self, legs):
 		#legs = array of Leg
@@ -20,12 +21,8 @@ class Spider:
 
 	def move(self, angle):
 		while True:
-			for i in range(1, 6, 2):
-				self.legs[i].moveToward(angle)
-			#wait for move completion
-			for i in range(0, 6, 2):
-				self.legs[i].moveToward(angle)
-			#wait for move completion
-
-
+			for l in self.legs:
+				l.move()
+				if not l.hasScheduledMove():
+					l.moveToward(angle)
 

@@ -21,6 +21,7 @@ class Leg:
 		self.x = x # top down view
 		self.y = y # top down view
 		self.motors = (servo_up, servo_middle, servo_down)
+		self.moves = []
 
 	def getMotors(self):
 		return self.motors
@@ -52,24 +53,20 @@ class Leg:
 
 	@staticmethod            	
 	def locationToAngle(x, y, z, a, b):
-		print(a, b)
 		alpha = 150 + (90 - math.degrees(math.atan2(x, y)))
 	
 		p = math.sqrt(x**2 + y**2)
 		l = math.sqrt(p**2 + z**2)
 		if (l > a + b):
+			print("Warning: You requested an impossible location for a leg")
 			return None
 
-		print(p, l, (-l**2 + a**2 + b**2) / (2 * a * b))
-	
 		gamma = math.degrees(math.acos((-l**2 + a**2 + b**2) / (2 * a * b)))
 
 		o3 = math.degrees(math.acos(z/l))
 		o4 = math.degrees(math.acos((-b**2 + a**2 + l**2) / (2 * a * l)))
-		print(o3, o4)
 		beta = 90 - (o3 + o4)	
 
-		print(alpha, beta, gamma)
 		return (alpha, beta + 150, 180 - gamma + 60)
 		
 	def moveToward(self, direction):
@@ -79,7 +76,29 @@ class Leg:
 			reversedDirection = True
 			relativeDirection = (relativeDirection + 180.0) % 360.0
 			
-		#find beta and gamma with maximal math.sqrt(x**2 + y**2) for z = Spider.groundHeight and alpha = relativeDirection
+		maxGamma = 70
+		minGamma = 150 + 70
+		alpha = relativeDirection
+		gamma = reversedDirection ? minGamma : maxGamma
+		beta = # compute beta based on alpha, gamma, z
+		
+		self.moves.append(LegMotion(self.getPosition(), (alpha, beta, gamma)) # Schedule the lifting motion
+		self.moves.append(LegMotion(self.getPosition(), (alpha, beta, gamma)) # Schedule the forward motion
+		self.moves.append(LegMotion(self.getPosition(), (alpha, beta, gamma)) # Schedule the backward motion
+	
+	def move(self): # move the leg according to the current self.move[0], does nothing if len(self.move) == 0
+		if len(self.moves) != 0:
+			currentMove = self.moves[0]
+			if currentMove.isDone():
+				self.moves.pop(0)
+				if len(self.moves) != 0:
+					currentMove = self.moves[0]
+					currentMove.start()
+			currentValues = currentMove.currentValues()
+			self.setAngle(currentValues[0], currentValues[1], currentValues[2])
+		
+	def hasScheduledMove(self):
+		return len(self.moves) != 0
 		
 if __name__ == '__main__':
 	pydyn.enable_vrep()
