@@ -23,6 +23,9 @@ class Leg:
 		self.y = y # top down view
 		self.motors = (servo_up, servo_middle, servo_down)
 		self.moves = []
+		
+	def initAtGroundHeight(self):
+		self.setPosition(50.0, 0, Spider.groundHeight)
 
 	def getMotors(self):
 		return self.motors
@@ -37,7 +40,8 @@ class Leg:
 		self.motors[0].setAngle(a)
 		self.motors[1].setAngle(b)
 		self.motors[2].setAngle(c)
-				
+
+	"""				
 	def angleToPosition(self, alpha, beta, gamma, relative = True):
 		if relative == True:
 			return (numpy.cos(alpha) * (Leg.a1 + Leg.b * numpy.cos(beta) + Leg.c * numpy.cos(beta + gamma)),
@@ -46,11 +50,12 @@ class Leg:
 		else:
 			rel = self.angleToPosition(alpha, beta, gamma, True)
 		return() # TODO: Implementation
+	"""
 
 	def setPosition(self, x, y, z):
 		angles = Leg.locationToAngle(x, y, z, Leg.b, Leg.c)
-		print(angles)
 		self.setAngle(angles[0], angles[1], angles[2])
+
 
 	@staticmethod            	
 	def locationToAngle(x, y, z, a, b):
@@ -70,36 +75,65 @@ class Leg:
 
 		return (alpha, beta + 150, 180 - gamma + 60)
 		
-	def moveToward(self, direction):
+	def moveToward(self, direction, completionRatio = 0.0):
 		relativeDirection = self.orientation - direction
 		reversedDirection = False
-		if (relativeDirection > 90 or relativeDirection < -90): #if impossible direction for alpha, reverse it
+		print(direction, self.orientation, relativeDirection)
+		if relativeDirection > 90:
+			reversedDirection = True
+			relativeDirection = relativeDirection - 180.0
+		elif relativeDirection < -90:
 			reversedDirection = True
 			relativeDirection = relativeDirection + 180.0
+		print(relativeDirection, reversedDirection)
+			
+		liftTime = 1.0
+		forwardTime = 1.0
+		pullTime = 5.0
+		totalTime = liftTime + forwardTime + pullTime
+		currentTime = completionRatio * totalTime
 		
-		z = Spider.groundHeight
-		maxGamma = 160
-		minGamma = 40
+		maxGamma = 160.0
+		minGamma = 70.0
+		aveGamma = minGamma + (maxGamma - minGamma) * 0.5
 		alpha = relativeDirection
 		
-		#self.moves.append(LegMotion(self.getAngle(), (alpha, beta, gamma))) # Schedule the lifting motion
+		gamma = maxGamma if reversedDirection else minGamma
+		oldValues = Leg.computeServoAngles(alpha, Leg.computeBeta(alpha, gamma, Spider.groundHeight), gamma) # cannot read current position because of vrep
+		
+		gamma = aveGamma
+		beta = Leg.computeBeta(alpha, gamma, Spider.liftHeight)
+		newValues = Leg.computeServoAngles(alpha, beta, gamma)
+		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, liftTime)
+		if currentTime < liftTime:
+			self.moves.append(LegMotion(oldValues, newValues, liftTime - currentTime)) # Schedule the lifting motion
+			currentTime = 0.0
+		else:
+			currentTime -= liftTime
 		
 		gamma = minGamma if reversedDirection else maxGamma
-		beta = Leg.computeBeta(alpha, gamma, z)
+		beta = Leg.computeBeta(alpha, gamma, Spider.groundHeight)
+		oldValues = newValues
 		newValues = Leg.computeServoAngles(alpha, beta, gamma)
-		print(self.getAngle())
-		self.moves.append(LegMotion(self.getAngle(), newValues)) # Schedule the forward motion
+		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, forwardTime)
+		if currentTime < forwardTime:
+			self.moves.append(LegMotion(oldValues, newValues, forwardTime - currentTime)) # Schedule the forward motion
+			currentTime = 0.0
+		else:
+			currentTime -= forwardTime
 
 		gamma = maxGamma if reversedDirection else minGamma		
-		beta = Leg.computeBeta(alpha, gamma, z)
-		self.moves.append(LegMotion(newValues, Leg.computeServoAngles(alpha, beta, gamma))) # Schedule the backward motion
-		
+		beta = Leg.computeBeta(alpha, gamma, Spider.groundHeight)
+		oldValues = newValues
+		newValues = Leg.computeServoAngles(alpha, beta, gamma)
+		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, pullTime)
+		if currentTime < pullTime:
+			self.moves.append(LegMotion(oldValues, newValues, pullTime - currentTime)) # Schedule the backward motion
+
 	@staticmethod
 	def computeBeta(alpha, gamma, z): #compute the beta angle according to alpha, gamma and z. This function works with theorical values
-		l = math.sqrt(Leg.b**2 + Leg.c**2 - 2 * Leg.b * Leg.c * math.cos(gamma))
-		print(l, z)
-		p = math.sqrt(l**2 - z**2)
-		o3 = math.degrees(math.acos((z**2 + l**2 - p**2) / (2 * z * l)))
+		l = math.sqrt(Leg.b**2 + Leg.c**2 - 2 * Leg.b * Leg.c * math.cos(math.radians(gamma)))
+		o3 = math.degrees(math.acos(z / l))
 		o4 = math.degrees(math.acos((Leg.b**2 + l**2 - Leg.c**2) / (2 * Leg.b * l)))
 		return 90 - (o3 + o4)
 		
@@ -112,11 +146,9 @@ class Leg:
 			currentMove = self.moves[0]
 			if currentMove.isDone():
 				self.moves.pop(0)
-				print("Move done")
 				if len(self.moves) != 0:
 					currentMove = self.moves[0]
 					currentMove.start()
-					print("New move loaded")
 					
 			currentValues = currentMove.currentValues()
 			self.setAngle(currentValues[0], currentValues[1], currentValues[2])
@@ -132,8 +164,15 @@ if __name__ == '__main__':
 	l = configLegs(ctrl.motors)
 	s = Spider(l)
 	s.init()
+	time.sleep(1.0)
 	leg = s.getLeg(1)
-	m = leg.getMotor(2)
-	m.servo_ctrl.position = 230
-	time.sleep(2.0)
-	print (m.servo_ctrl.position)
+	"""
+	theoAngles = (0.0, Leg.computeBeta(0.0, 90.0, Spider.liftHeight), 90.0)
+	angles = Leg.computeServoAngles(theoAngles[0], theoAngles[1], theoAngles[2])
+	print(theoAngles)
+	print(angles)
+	leg.setAngle(angles[0], angles[1], angles[2])
+	"""
+	leg.moveToward(30)
+	while leg.hasScheduledMove():
+		leg.move()

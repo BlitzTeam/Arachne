@@ -29,9 +29,7 @@ class LegMotion(object):
 		
 	def currentValues(self):
 		currentTime = self.motionTimer.elapsedTime()
-		return (LegMotion.extrapolate(self.startValues[0], self.endValues[0], currentTime, self.time),
-				LegMotion.extrapolate(self.startValues[1], self.endValues[1], currentTime, self.time),
-				LegMotion.extrapolate(self.startValues[2], self.endValues[2], currentTime, self.time))
+		return LegMotion.extrapolateBatch(self.startValues, self.endValues, currentTime, self.time)
 	
 	def isDone(self):
 		return self.motionTimer.elapsedTime() > self.time
@@ -40,7 +38,17 @@ class LegMotion(object):
 	def extrapolate(startValue, endValue, currentTime, totalTime):
 		if currentTime > totalTime:
 			return endValue
-		return startValue + (endValue - startValue) * (currentTime / totalTime) 
+		return startValue + (endValue - startValue) * (currentTime / totalTime)
+	
+	@staticmethod
+	def extrapolateBatch(startValues, endValues, currentTime, totalTime):
+		if len(startValues) != len(endValues):
+			print("Error: startValues and endValues must have the same length in LegMotion.extrapolateBatch()")
+		res = []
+		for i in range(len(startValues)):
+			res.append(LegMotion.extrapolate(startValues[i], endValues[i], currentTime, totalTime))
+		return res
+			
 
 if __name__ == '__main__':
 	s = ServoMotion(20,5,10,0.25)
