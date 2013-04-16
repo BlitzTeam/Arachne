@@ -23,7 +23,6 @@ class Spider:
 		return self.legs[id]
 
 	def move(self, angle = 0.0, gait = Gait.Wave):
-		
 		#init the legs according to the chosen gait
 		if gait == Gait.Tripod:
 			for i in range(len(self.legs)):
@@ -34,15 +33,31 @@ class Spider:
 		elif gait == Gait.Ripple:
 			for i in range(len(self.legs)):
 				self.legs[i].moveToward(angle, 0.0 if i % 3 == 0 else 1/3 if i % 3 == 1 else 2/3)
-		else:
-			print("WTF are you doing man?")
-		
 		# walk
 		while True:
 			for l in self.legs:
 				l.move()
 				if not l.hasScheduledMove():
 					l.moveToward(angle)
+					
+	def rotate(self, gait = Gait.Wave):
+		#init the legs according to the chosen gait
+		if gait == Gait.Tripod:
+			for i in range(len(self.legs)):
+				self.legs[i].moveToward(angle, 0.0 if i % 2 == 0 else 0.5, True))
+		elif gait == Gait.Wave:		
+			for i in range(len(self.legs)):
+				self.legs[i].moveToward(angle, float(i) / float(len(self.legs), True))
+		elif gait == Gait.Ripple:
+			for i in range(len(self.legs)):
+				self.legs[i].moveToward(angle, 0.0 if i % 3 == 0 else 1/3 if i % 3 == 1 else 2/3, True)
+		
+		# walk
+		while True:
+			for l in self.legs:
+				l.move()
+				if not l.hasScheduledMove():
+					l.moveToward(angle, 0.0, True)
 
 
 

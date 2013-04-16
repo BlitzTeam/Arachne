@@ -76,8 +76,12 @@ class Leg:
 
 		return (alpha, beta + 150, 180 - gamma + 60)
 		
-	def moveToward(self, direction, completionRatio = 0.0):
-		relativeDirection = self.orientation - direction
+	def moveToward(self, direction, completionRatio = 0.0, directionIsRelative = False):
+		if directionIsRelative:
+			relativeDirection = self.orientation - direction
+		else:
+			relativeDirection = direction
+		
 		reversedDirection = False
 		print(direction, self.orientation, relativeDirection)
 		if relativeDirection > 90:
