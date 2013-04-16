@@ -69,4 +69,4 @@ if __name__ == "__main__":
 	
 	legs = configLegs(ctrl.motors)
 	s = Spider(legs)
-	s.rotate(Gait.Tripod)
+	s.move(30.0, Gait.Tripod)
