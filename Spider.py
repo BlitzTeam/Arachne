@@ -3,6 +3,7 @@ import pydyn.dynamixel as dyn
 import pydyn
 from Config import *
 import time
+from constants import *
 
 class Spider:
 	groundHeight = 70.0
@@ -22,21 +23,26 @@ class Spider:
 	def getLeg(self, id):
 		return self.legs[id]
 		
-	def initLegsPosition(self, angle): #init the legs according to the chosen gait
+	def initLegsPosition(self, angle, gait, incremental = False): #init the legs according to the chosen gait
 		if gait == Gait.Tripod:
 			for i in range(len(self.legs)):
-				self.legs[i].moveToward(angle, 0.0 if i % 2 == 0 else 0.5))
+				self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, 0.0 if i % 2 == 0 else 0.5)
 		elif gait == Gait.Wave:		
 			for i in range(len(self.legs)):
-				self.legs[i].moveToward(angle, float(i) / float(len(self.legs)))
+				self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, float(i) / float(len(self.legs)))
 		elif gait == Gait.Ripple:
 			for i in range(len(self.legs)):
-				self.legs[i].moveToward(angle, 0.0 if i % 3 == 0 else 1/3 if i % 3 == 1 else 2/3)
+				self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, 0.0 if i % 3 == 0 else 1/3 if i % 3 == 1 else 2/3)
+		
+		for l in legs:
+			l.move()
+		time.sleep(1.0)
+		for l in legs:
+			l.getCurrentMove().start()
 
 
-	def move(self, angle = 0.0, gait = Gait.Wave):
-		self.initLegsPosition(gait)				
-		#wait until th
+	def move(self, angle = 0.0, gait = Gait.Wave): # problems between -60 and 180 degrees
+		self.initLegsPosition(angle, gait)
 		
 		# walk
 		while True:
@@ -44,36 +50,23 @@ class Spider:
 				l.move()
 				if not l.hasScheduledMove():
 					l.moveToward(angle)
-					
+										
 	def rotate(self, gait = Gait.Wave):
-		rotationAngle = 30.0 # Check this value
-		self.initLegsPosition(gait)
-		
+		rotationAngle = 90.0
+		self.initLegsPosition(rotationAngle, gait, True)
 		
 		# walk
 		while True:
-			for l in self.legs:
+			for i, l in enumerate(self.legs):
 				l.move()
 				if not l.hasScheduledMove():
-					l.moveToward(angle, 0.0, True)
-
-
+					l.moveToward(rotationAngle + i * 360 / 6)
 
 if __name__ == "__main__":
 	pydyn.enable_vrep()
-	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
+	ctrl = dyn.create_controller(verbose = False, motor_range = [0, 18])
 	ctrl.start_sim()
 	
 	legs = configLegs(ctrl.motors)
 	s = Spider(legs)
-	s.init()
-	time.sleep(1.0)
-	
-	"""
-	for leg in s.legs:
-		leg.moveToward(30.0)
-		while leg.hasScheduledMove():
-			leg.move()
-	"""
-	
-	s.move(0.0)
+	s.rotate(Gait.Tripod)

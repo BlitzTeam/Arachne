@@ -27,6 +27,12 @@ class LegMotion(object):
 	def start(self):
 		self.motionTimer.start()
 		
+	def pause(self):
+		self.motionTimer.pause()
+	
+	def resume(self):
+		self.motionTimer.resume()
+		
 	def currentValues(self):
 		currentTime = self.motionTimer.elapsedTime()
 		return LegMotion.extrapolateBatch(self.startValues, self.endValues, currentTime, self.time)

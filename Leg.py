@@ -9,14 +9,14 @@ from Motion import *
 from constants import *
 
 class Leg:
-	a1 = 49
-	a2 = -14
+	#a1 = 49
+	#a2 = -14
 	b = 50
 	c = 70
 	
-	alpha0 = 150
-	beta0 = 175
-	gamma0 = 90
+	liftTime = 0.5
+	forwardTime = 0.5
+	pullTime = 2.0
 
 	def __init__(self, orientation, x , y , servo_up, servo_middle, servo_down):
 		self.orientation = orientation
@@ -76,26 +76,24 @@ class Leg:
 
 		return (alpha, beta + 150, 180 - gamma + 60)
 		
-	def moveToward(self, direction, completionRatio = 0.0, directionIsRelative = False):
-		if directionIsRelative:
-			relativeDirection = self.orientation - direction
-		else:
-			relativeDirection = direction
+	def getCurrentMove(self):
+		if len(self.moves) > 0:
+			return self.moves[0]
+		return None
 		
+	def moveToward(self, direction, completionRatio = 0.0):
+		relativeDirection = self.orientation - direction
+		relativeDirection = (relativeDirection + 180) % 360 - 180 # direction between -180 and +180 degrees
 		reversedDirection = False
-		print(direction, self.orientation, relativeDirection)
-		if relativeDirection > 90:
+				
+		if relativeDirection > 90 or (relativeDirection == 90 and self.motors[0].offset > 0):
 			reversedDirection = True
 			relativeDirection = relativeDirection - 180.0
-		elif relativeDirection < -90:
+		elif relativeDirection < -90 or (relativeDirection == -90.0 and self.motors[0].offset < 0):
 			reversedDirection = True
 			relativeDirection = relativeDirection + 180.0
-		print(relativeDirection, reversedDirection)
-			
-		liftTime = 1.0
-		forwardTime = 1.0
-		pullTime = 5.0
-		totalTime = liftTime + forwardTime + pullTime
+		
+		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
 		currentTime = completionRatio * totalTime
 		
 		maxGamma = 160.0
@@ -109,35 +107,35 @@ class Leg:
 		gamma = aveGamma
 		beta = Leg.computeBeta(alpha, gamma, Spider.liftHeight)
 		newValues = Leg.computeServoAngles(alpha, beta, gamma)
-		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, liftTime)
-		if currentTime < liftTime:
-			self.moves.append(LegMotion(oldValues, newValues, liftTime - currentTime)) # Schedule the lifting motion
+		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.liftTime)
+		if currentTime < Leg.liftTime:
+			self.moves.append(LegMotion(oldValues, newValues, Leg.liftTime - currentTime)) # Schedule the lifting motion
 			currentTime = 0.0
 		else:
-			currentTime -= liftTime
+			currentTime -= Leg.liftTime
 		
 		gamma = minGamma if reversedDirection else maxGamma
 		beta = Leg.computeBeta(alpha, gamma, Spider.groundHeight)
 		oldValues = newValues
 		newValues = Leg.computeServoAngles(alpha, beta, gamma)
-		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, forwardTime)
-		if currentTime < forwardTime:
-			self.moves.append(LegMotion(oldValues, newValues, forwardTime - currentTime)) # Schedule the forward motion
+		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.forwardTime)
+		if currentTime < Leg.forwardTime:
+			self.moves.append(LegMotion(oldValues, newValues, Leg.forwardTime - currentTime)) # Schedule the forward motion
 			currentTime = 0.0
 		else:
-			currentTime -= forwardTime
+			currentTime -= Leg.forwardTime
 
 		gamma = maxGamma if reversedDirection else minGamma		
 		beta = Leg.computeBeta(alpha, gamma, Spider.groundHeight)
 		oldValues = newValues
 		newValues = Leg.computeServoAngles(alpha, beta, gamma)
-		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, pullTime)
-		if currentTime < pullTime:
-			self.moves.append(LegMotion(oldValues, newValues, pullTime - currentTime)) # Schedule the backward motion
+		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.pullTime)
+		if currentTime < Leg.pullTime:
+			self.moves.append(LegMotion(oldValues, newValues, Leg.pullTime - currentTime)) # Schedule the backward motion
 
 	@staticmethod
 	def computeBeta(alpha, gamma, z): #compute the beta angle according to alpha, gamma and z. This function works with theorical values
-		l = math.sqrt(Leg.b**2 + Leg.c**2 - 2 * Leg.b * Leg.c * math.cos(math.radians(gamma)))
+		l = math.sqrt(Leg.b**2 + Leg.c**2 - 2 * Leg.b * Leg.c * math.cos(math.radians(gamma)))		
 		o3 = math.degrees(math.acos(z / l))
 		o4 = math.degrees(math.acos((Leg.b**2 + l**2 - Leg.c**2) / (2 * Leg.b * l)))
 		return 90 - (o3 + o4)
@@ -170,14 +168,9 @@ if __name__ == '__main__':
 	s = Spider(l)
 	s.init()
 	time.sleep(1.0)
-	leg = s.getLeg(1)
-	"""
-	theoAngles = (0.0, Leg.computeBeta(0.0, 90.0, Spider.liftHeight), 90.0)
-	angles = Leg.computeServoAngles(theoAngles[0], theoAngles[1], theoAngles[2])
-	print(theoAngles)
-	print(angles)
-	leg.setAngle(angles[0], angles[1], angles[2])
-	"""
-	leg.moveToward(30)
+	leg = s.getLeg(4)
+
+	leg.moveToward(-30.0)
+
 	while leg.hasScheduledMove():
 		leg.move()
