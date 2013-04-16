@@ -30,7 +30,7 @@ def evolve(pop, res):
 	weightSum = sum([j for i,j in generation])
 
 	for i in range(len(pop)):
-		newGeneration.append(mutate(weightedRandomChoice(generation, weightSum), weightedRandomChoice(generation, weightSum)))
+		newGeneration.append(crossover(weightedRandomChoice(generation, weightSum), weightedRandomChoice(generation, weightSum)))
 
 	return newGeneration
 
@@ -41,15 +41,16 @@ def weightedRandomChoice(generation, weightSum):
 		if rand < 0:
 			return j
 
-
-
-def mutate(a, b):
+def crossover(a, b):
 	a_score = a[1]
 	b_score = b[1]
 	a = a[0]
 	b = b[0]
 	
 	return ServoMotion((a.amplitude + b.amplitude)/2, (a.period + b.period)/2, (a.center + b.center)/2)
+
+def mutate(a):
+	pass
 
 if __name__ == '__main__':
 	generationCount = 100

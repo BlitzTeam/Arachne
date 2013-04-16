@@ -6,6 +6,7 @@ import pydyn
 from Config import *
 from Spider import *
 from Motion import *
+from constants import *
 
 class Leg:
 	a1 = 49

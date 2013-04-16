@@ -22,12 +22,21 @@ class Spider:
 	def getLeg(self, id):
 		return self.legs[id]
 
-	def move(self, angle):
-		#init the legs
-		for i in range(len(self.legs)):
-			self.legs[i].moveToward(angle, float(i) / float(len(self.legs)))
-			print(float(i) / float(len(self.legs)))
-
+	def move(self, angle = 0.0, gait = Gait.Wave):
+		
+		#init the legs according to the chosen gait
+		if gait == Gait.Tripod:
+			for i in range(len(self.legs)):
+				self.legs[i].moveToward(angle, 0.0 if i % 2 == 0 else 0.5))
+		elif gait == Gait.Wave:		
+			for i in range(len(self.legs)):
+				self.legs[i].moveToward(angle, float(i) / float(len(self.legs)))
+		elif gait == Gait.Ripple:
+			for i in range(len(self.legs)):
+				self.legs[i].moveToward(angle, 0.0 if i % 3 == 0 else 1/3 if i % 3 == 1 else 2/3)
+		else:
+			print("WTF are you doing man?")
+		
 		# walk
 		while True:
 			for l in self.legs:
