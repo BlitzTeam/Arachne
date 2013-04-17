@@ -11,12 +11,13 @@ from constants import *
 class Leg:
 	#a1 = 49
 	#a2 = -14
-	b = 50
-	c = 70
+	a = 60
+	c = 24
+	b = 93
 	
 	liftTime = 0.5
 	forwardTime = 0.5
-	pullTime = 2.0
+	pullTime = 1.0
 
 	def __init__(self, orientation, x , y , servo_up, servo_middle, servo_down):
 		self.orientation = orientation
@@ -37,6 +38,10 @@ class Leg:
 	def getAngle(self):
 		return (self.motors[0].getAngle(), self.motors[1].getAngle(), self.motors[2].getAngle())
 
+	def setRealAngle(self, a, b, c): # set theorical angles
+		realAngles = Leg.computeServoAngles(a,b,c)
+		self.setAngle(realAngles[0], realAngles[1], realAngles[2])
+		 
 	def setAngle(self, a, b, c):
 		self.motors[0].setAngle(a)
 		self.motors[1].setAngle(b)
@@ -54,27 +59,33 @@ class Leg:
 	"""
 
 	def setPosition(self, x, y, z):
-		angles = Leg.locationToAngle(x, y, z, Leg.b, Leg.c)
+		angles = Leg.locationToAngle(x, y, z, Leg.a, Leg.b, Leg.c)
 		self.setAngle(angles[0], angles[1], angles[2])
 
 
 	@staticmethod            	
-	def locationToAngle(x, y, z, a, b):
-		alpha = 150 + (90 - math.degrees(math.atan2(x, y)))
+	def locationToAngle(x, y, z, a, b, c):
+		print(x, y, z, a, b, c)
+		alpha = 90 - math.degrees(math.atan2(x, y))
 	
 		p = math.sqrt(x**2 + y**2)
 		l = math.sqrt(p**2 + z**2)
-		if (l > a + b):
-			print("Warning: You requested an impossible location for a leg")
-			return None
+		o3 = math.acos(z / l)
+		
+		m = math.sqrt(a**2 + c**2)
+		o4 = math.acos(a / m)
+		
+		o5 = math.acos((m**2 + l**2 - b**2) / (2 * m * l))
+		o6 = math.acos((m**2 + b**2 - l**2) / (2 * m * b))
+		o7 = 180 - math.degrees(o4) - 90
+		
+		gamma = 180 - o7 - math.degrees(o6)
+		beta = math.degrees(o3) + math.degrees(o5) - 90 + math.degrees(o4)
+		
+		print("p, l, o3, m, o5, o6, o7", p, l, math.degrees(o3), m, math.degrees(o5), math.degrees(o6), o7)
+		print(alpha, beta, gamma)
 
-		gamma = math.degrees(math.acos((-l**2 + a**2 + b**2) / (2 * a * b)))
-
-		o3 = math.degrees(math.acos(z/l))
-		o4 = math.degrees(math.acos((-b**2 + a**2 + l**2) / (2 * a * l)))
-		beta = 90 - (o3 + o4)	
-
-		return (alpha, beta + 150, 180 - gamma + 60)
+		return Leg.computeServoAngles(alpha, beta, gamma)
 		
 	def getCurrentMove(self):
 		if len(self.moves) > 0:
@@ -96,8 +107,8 @@ class Leg:
 		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
 		currentTime = completionRatio * totalTime
 		
-		maxGamma = 160.0
-		minGamma = 70.0
+		maxGamma = -40.0
+		minGamma = 40.0
 		aveGamma = minGamma + (maxGamma - minGamma) * 0.5
 		alpha = relativeDirection
 		
@@ -135,14 +146,17 @@ class Leg:
 
 	@staticmethod
 	def computeBeta(alpha, gamma, z): #compute the beta angle according to alpha, gamma and z. This function works with theorical values
-		l = math.sqrt(Leg.b**2 + Leg.c**2 - 2 * Leg.b * Leg.c * math.cos(math.radians(gamma)))		
+		l = math.sqrt(Leg.a**2 + Leg.b**2 - 2 * Leg.a * Leg.b * math.cos(math.radians(gamma)))	
+		m = math.sqrt(Leg.a**2 + Leg.c**2)	
 		o3 = math.degrees(math.acos(z / l))
-		o4 = math.degrees(math.acos((Leg.b**2 + l**2 - Leg.c**2) / (2 * Leg.b * l)))
-		return 90 - (o3 + o4)
+		o4 = math.acos(Leg.a / m)
+		o5 = math.acos((m**2 + l**2 - Leg.b**2) / (2 * m * l))
+		beta = math.degrees(o3) + math.degrees(o5) - 90 + math.degrees(o4)
+		return Leg.computeServoAngles(0,beta, gamma)[0]
 		
 	@staticmethod
 	def computeServoAngles(alpha, beta, gamma): #compute the real values given to the servos
-		return (alpha + 150, beta + 150, 180 - gamma + 60)
+		return (alpha + 150, -beta + 150, 180 - gamma - 30)
 	
 	def move(self): # move the leg according to the current self.move[0], does nothing if len(self.move) == 0
 		if len(self.moves) != 0:
@@ -160,17 +174,18 @@ class Leg:
 		return len(self.moves) != 0
 		
 if __name__ == '__main__':
-	pydyn.enable_vrep()
 	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
 	ctrl.start_sim()
 	
-	l = configLegs(ctrl.motors)
+	l = configLegs(ctrl.motors, simulator = False)
 	s = Spider(l)
-	s.init()
+	#s.init()
+	
+	for l in s.getLegs():
+		l.setAngle(150, 150, 150)
+		
 	time.sleep(1.0)
-	leg = s.getLeg(4)
-
-	leg.moveToward(-30.0)
-
-	while leg.hasScheduledMove():
-		leg.move()
+	
+	leg = s.getLeg(1)
+	leg.setPosition(Leg.a, 0, Leg.b + Leg.c)
+	time.sleep(2.0)

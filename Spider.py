@@ -63,10 +63,8 @@ class Spider:
 					l.moveToward(rotationAngle + i * 360 / 6)
 
 if __name__ == "__main__":
-	pydyn.enable_vrep()
-	ctrl = dyn.create_controller(verbose = False, motor_range = [0, 18])
-	ctrl.start_sim()
-	
-	legs = configLegs(ctrl.motors)
+	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])	
+	legs = configLegs(ctrl.motors, simulator = False)
 	s = Spider(legs)
 	s.move(30.0, Gait.Tripod)
+	#s.rotate(Gait.Wave)
