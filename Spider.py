@@ -1,6 +1,7 @@
 import math
 import pydyn.dynamixel as dyn
 import pydyn
+import thread
 from Config import *
 import time
 from constants import *
@@ -12,6 +13,8 @@ class Spider:
 	def __init__(self, legs):
 		#legs = array of Leg
 		self.legs = legs
+		self.currentDirection = 0.0
+		self.moving = False
 		
 	def init(self):
 		for l in self.legs:
@@ -41,15 +44,17 @@ class Spider:
 			l.getCurrentMove().start()
 
 
-	def move(self, angle = 0.0, gait = Gait.Wave): # problems between -60 and 180 degrees
-		self.initLegsPosition(angle, gait)
-		
-		# walk
-		while True:
-			for l in self.legs:
-				l.move()
-				if not l.hasScheduledMove():
-					l.moveToward(angle)
+	def move(self, angle = 0.0, gait = Gait.Wave, threaded = False): # problems between -60 and 180 degrees
+		if threaded:
+			thread.start_new_thread(self.move(angle, gait))
+		else:
+			self.initLegsPosition(angle, gait)		
+			# walk
+			while True:
+				for l in self.legs:
+					l.move()
+					if not l.hasScheduledMove():
+						l.moveToward(angle)
 										
 	def rotate(self, gait = Gait.Wave):
 		rotationAngle = 90.0
