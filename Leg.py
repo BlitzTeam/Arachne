@@ -151,11 +151,11 @@ class Leg:
 	@staticmethod
 	def computeXY(alpha, p):
 		f = math.tan(math.radians(alpha))
-		x = math.sqrt(math.sqrt(p) / (1 + f**2))
+		x = math.sqrt(p**2 / (1 + f**2))
 		y = x * f
-		print("computeXY")
-		print("x,y, alpha, p f")
-		print(x,y, alpha, p, f)
+		#print("computeXY")
+		#print("x,y, alpha, p f")
+		#print(x,y, alpha, p, f)
 		return (x, y)
 		
 	@staticmethod
@@ -187,6 +187,6 @@ if __name__ == '__main__':
 	#for l in s.getLegs():
 		#l.setAngle(150, 150, 150)
 	
-	print(Leg.computeXY(0.0, 50.0))
+	print(Leg.computeXY(60.0, 50.0))
 
 	raw_input()
