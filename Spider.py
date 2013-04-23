@@ -71,5 +71,26 @@ if __name__ == "__main__":
 	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])	
 	legs = configLegs(ctrl.motors, simulator = False)
 	s = Spider(legs)
-	s.move(30.0, Gait.Tripod)
+	#s.move(30.0, Gait.Tripod)
 	#s.rotate(Gait.Wave)
+	for l in s.getLegs():
+		l.setAngle(150, 150, 150)
+	
+	time.sleep(0.5)
+	#for i in range(50,80,5):
+	#	for l in s.getLegs():
+	#		time.sleep(0.2)
+	#		l.setPosition(130, 0, i)
+	#		print("z=",i,"atteinte")
+	#	time.sleep(0.5)
+		
+		
+	leg = s.getLeg(1)
+	angles = leg.setPosition(130, 0, 70)
+	time.sleep(3.0)
+	leg = s.getLeg(1)
+	angles = leg.setPosition(110, 0, 70)
+	time.sleep(3.0)
+	leg = s.getLeg(1)
+	angles = leg.setPosition(90, 0, 70)
+	time.sleep(3.0)

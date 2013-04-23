@@ -64,7 +64,7 @@ class Leg:
 		self.setAngle(angles[0], angles[1], angles[2])
 
 
-	@staticmethod            	
+	@staticmethod
 	def locationToAngle(x, y, z):
 		print("location to angle")
 		print("x,y,z",x,y,z)
