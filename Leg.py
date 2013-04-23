@@ -93,6 +93,18 @@ class Leg:
 			return self.moves[0]
 		return None
 		
+	def scheduleMove(self, startPosition, endPosition, time):
+		currentPosition = list(startPosition)
+		dx = (endPosition[0] - startPosition[0]) / Leg.motionResolution
+		dy = (endPosition[1] - startPosition[1]) / Leg.motionResolution
+		dz = (endPosition[2] - startPosition[2]) / Leg.motionResolution
+		for i in range(int(Leg.motionResolution)):
+			tmp = currentPosition[:]
+			currentPosition[0] += dx
+			currentPosition[1] += dy
+			currentPosition[2] += dz
+			self.moves.append(LegMotion(currentPosition, tmp, time / Leg.motionResolution))
+	
 	def moveToward(self, direction, completionRatio = 0.0):
 		print("NEW MOVE")
 	
@@ -123,7 +135,7 @@ class Leg:
 		newValues = Leg.locationToAngle(x, y, Spider.liftHeight)
 		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.liftTime)
 		if currentTime < Leg.liftTime:
-			self.moves.append(LegMotion(oldValues, newValues, Leg.liftTime - currentTime)) # Schedule the lifting motion
+			self.scheduleMove(oldValues, newValues, Leg.liftTime - currentTime) # Schedule the lifting motion
 			currentTime = 0.0
 		else:
 			currentTime -= Leg.liftTime
@@ -134,7 +146,7 @@ class Leg:
 		newValues = Leg.locationToAngle(x, y, Spider.groundHeight)
 		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.forwardTime)
 		if currentTime < Leg.forwardTime:
-			self.moves.append(LegMotion(oldValues, newValues, Leg.forwardTime - currentTime)) # Schedule the forward motion
+			self.scheduleMove(oldValues, newValues, Leg.forwardTime - currentTime) # Schedule the forward motion
 			currentTime = 0.0
 		else:
 			currentTime -= Leg.forwardTime
@@ -145,7 +157,7 @@ class Leg:
 		newValues = Leg.locationToAngle(x, y, Spider.groundHeight)
 		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.pullTime)
 		if currentTime < Leg.pullTime:
-			self.moves.append(LegMotion(oldValues, newValues, Leg.pullTime - currentTime)) # Schedule the backward motion
+			self.scheduleMove(oldValues, newValues, Leg.pullTime - currentTime) # Schedule the backward motion
 
 	
 	@staticmethod
@@ -187,6 +199,6 @@ if __name__ == '__main__':
 	#for l in s.getLegs():
 		#l.setAngle(150, 150, 150)
 	
-	print(Leg.computeXY(60.0, 50.0))
-
-	raw_input()
+	leg = Leg(0, 0, 0, 0, 0, 0)
+	leg.scheduleMove((0,0,0), (10, 1000, 2), 5)
+	
