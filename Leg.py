@@ -66,7 +66,7 @@ class Leg:
 
 	@staticmethod            	
 	def locationToAngle(x, y, z, a, b, c):
-		print(x, y, z, a, b, c)
+		#print(x, y, z, a, b, c)
 		alpha = 90 - math.degrees(math.atan2(x, y))
 	
 		p = math.sqrt(x**2 + y**2)
@@ -83,8 +83,8 @@ class Leg:
 		gamma = 180 - o7 - math.degrees(o6)
 		beta = math.degrees(o3) + math.degrees(o5) - 90 + math.degrees(o4)
 		
-		print("p, l, o3, m, o5, o6, o7", p, l, math.degrees(o3), m, math.degrees(o5), math.degrees(o6), o7)
-		print(alpha, beta, gamma)
+		#print("p, l, o3, m, o5, o6, o7", p, l, math.degrees(o3), m, math.degrees(o5), math.degrees(o6), o7)
+		#print(alpha, beta, gamma)
 
 		return Leg.computeServoAngles(alpha, beta, gamma)
 		
