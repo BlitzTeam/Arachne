@@ -18,6 +18,7 @@ class Leg:
 	liftTime = 0.5
 	forwardTime = 0.5
 	pullTime = 1.0
+	motionResolution = 10.0
 
 	def __init__(self, orientation, x , y , servo_up, servo_middle, servo_down):
 		self.orientation = orientation
@@ -107,8 +108,8 @@ class Leg:
 		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
 		currentTime = completionRatio * totalTime
 		
-		maxGamma = -40.0
-		minGamma = 40.0
+		maxGamma = -26.0
+		minGamma = 60.0
 		aveGamma = minGamma + (maxGamma - minGamma) * 0.5
 		alpha = relativeDirection
 		
@@ -146,17 +147,21 @@ class Leg:
 
 	@staticmethod
 	def computeBeta(alpha, gamma, z): #compute the beta angle according to alpha, gamma and z. This function works with theorical values
-		l = math.sqrt(Leg.a**2 + Leg.b**2 - 2 * Leg.a * Leg.b * math.cos(math.radians(gamma)))	
-		m = math.sqrt(Leg.a**2 + Leg.c**2)	
+		m = math.sqrt(Leg.a**2 + Leg.c**2)
+		o4 = math.degrees(math.acos(Leg.a / m)) #degrees
+		o7 = 180 - math.degrees(o4) - 90 #degrees
+		o6 = 180 - (gamma + o7) #degrees
+		l = math.sqrt(m**2 + Leg.b**2 - 2 * m * Leg.b * math.cos(math.radians(o6)))
 		o3 = math.degrees(math.acos(z / l))
 		o4 = math.acos(Leg.a / m)
 		o5 = math.acos((m**2 + l**2 - Leg.b**2) / (2 * m * l))
-		beta = math.degrees(o3) + math.degrees(o5) - 90 + math.degrees(o4)
-		return Leg.computeServoAngles(0,beta, gamma)[0]
+		beta = o3 + o5 + o4 - 90
+		print(beta)
+		return beta
 		
 	@staticmethod
 	def computeServoAngles(alpha, beta, gamma): #compute the real values given to the servos
-		return (alpha + 150, -beta + 150, 180 - gamma - 30)
+		return (alpha + 150, beta + 150, 180 - gamma - 30)
 	
 	def move(self): # move the leg according to the current self.move[0], does nothing if len(self.move) == 0
 		if len(self.moves) != 0:
@@ -175,7 +180,6 @@ class Leg:
 		
 if __name__ == '__main__':
 	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
-	ctrl.start_sim()
 	
 	l = configLegs(ctrl.motors, simulator = False)
 	s = Spider(l)
@@ -183,9 +187,14 @@ if __name__ == '__main__':
 	
 	for l in s.getLegs():
 		l.setAngle(150, 150, 150)
-		
-	time.sleep(1.0)
 	
 	leg = s.getLeg(1)
-	leg.setPosition(Leg.a, 0, Leg.b + Leg.c)
-	time.sleep(2.0)
+	angles = Leg.computeServoAngles(0.0, 0.0, 17.0)
+	
+	leg.moveToward(30.0)
+	while(True):
+		leg.move()
+		if (not leg.hasScheduledMove()):
+			leg.moveToward(30.0)
+
+	raw_input()

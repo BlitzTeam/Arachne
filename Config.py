@@ -13,7 +13,7 @@ def configLegs(motors, simulator = True):
 					Leg(180.0, 0, 0, Servo(motors[9], offset = 30), Servo(motors[10]), Servo(motors[11], offset = 90)),
 					Leg(270.0, 0, 0, Servo(motors[6]), Servo(motors[7]), Servo(motors[8], offset = 90)),
 					Leg(0.0, 0, 0, Servo(motors[3], offset = -30), Servo(motors[4]), Servo(motors[5], offset = 90)))
-		
+	
 	Leg.a = 60
 	Leg.b = 93
 	Leg.c = 24
