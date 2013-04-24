@@ -93,7 +93,7 @@ class Leg:
 			currentPosition[2] += dz
 			self.moves.append(LegMotion(tmp, currentPosition, time / Leg.motionResolution))
 	
-	def moveToward(self, direction, completionRatio = 0.0):
+	def moveToward(self, direction, completionRatio = 0.0, turnAngle = 0.0):
 		#print("NEW MOVE")
 	
 		relativeDirection = self.orientation - direction
@@ -106,6 +106,9 @@ class Leg:
 		elif relativeDirection < -90 or (relativeDirection == -90.0 and self.motors[0].offset < 0):
 			reversedDirection = True
 			relativeDirection = relativeDirection + 180.0
+		
+		if not reversedDirection:
+			relativeDirection += turnAngle
 		
 		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
 		currentTime = completionRatio * totalTime

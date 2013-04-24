@@ -29,7 +29,9 @@ class GamepadHandler(threading.Thread):
 						y = event.value
 					
 					direction = math.degrees(math.atan2(y, x))
-					#self.spider.currentDirection = direction
+					direction = self.spider.currentDirection * 0.99 + (self.spider.currentDirection - direction) * 0.01
+					self.spider.currentDirection = direction
+					print(direction)
 			else:
 				time.sleep(0.5)
 
@@ -44,16 +46,18 @@ class TerminalThread(threading.Thread):
 			line = raw_input(">> ")
 			if line == "help":
 				print("help: print the available commands")
-				print("joystick: enable the joystick to control the spider")
+				print("joystick: enable/disable the joystick to control the spider")
 				print("goto [x] [y]: move the spider to the give position")
 				print("move [direction]: move the spider toward the given direction")
 				print("stop: stops the spider")
 				print("quit: quits the program")
 			
 			elif line == "joystick":
-				GamepadHandler.gamepad = PyPad('/dev/input/js0')
-				print("Joystick Enabled")
-			
+				if GamepadHandler.gamepad == None:
+					GamepadHandler.gamepad = PyPad('/dev/input/js0')
+					print("Joystick Enabled")
+				else:
+					GamepadHandler.gamepad = None
 			elif line.startswith("goto"):
 				args = line.split(" ")
 				if len(args) == 3:
@@ -80,6 +84,7 @@ class TerminalThread(threading.Thread):
 if __name__ == "__main__":	
 	ctrl = dyn.create_controller(verbose = False, motor_range = [0, 20])
 	spider = Spider(configLegs(ctrl.motors, simulator = False))
+
 	gamepadThread = GamepadHandler(spider)
 	gamepadThread.daemon = True
 	gamepadThread.start()
@@ -88,10 +93,7 @@ if __name__ == "__main__":
 	terminalThread.daemon = True
 	terminalThread.start()
 	
-	try:
-		while True:
-			spider.move(startNow = False)
-	except Exception:
-		print ("Exception ++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+	while True:
+		spider.move(startNow = False)
 
 
