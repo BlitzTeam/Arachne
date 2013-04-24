@@ -19,7 +19,7 @@ class Leg:
 	pullTime = 1.0
 	motionResolution = 1.0
 
-	def __init__(self, orientation, x , y , servo_up, servo_middle, servo_down):
+	def __init__(self, orientation, x , y , servo_up, servo_middle, servo_down, offset = "left"):
 		self.orientation = orientation
 		self.x = x # top down view
 		self.y = y # top down view
@@ -93,20 +93,62 @@ class Leg:
 			currentPosition[2] += dz
 			self.moves.append(LegMotion(tmp, currentPosition, time / Leg.motionResolution))
 	
-	def moveToward(self, direction, completionRatio = 0.0):
-		#print("NEW MOVE")
 	
+	def getRelativeDirection(self, direction):
+		inverse = False
+		if direction <= 270 or direction >= 90
+			inverse = True
+			direction = (direction + 180) % 360
+			
+		
 		relativeDirection = self.orientation - direction
 		relativeDirection = (relativeDirection + 180) % 360 - 180 # direction between -180 and +180 degrees
-		reversedDirection = False
-				
-		if relativeDirection > 90 or (relativeDirection == 90 and self.motors[0].offset > 0):
-			reversedDirection = True
-			relativeDirection = relativeDirection - 180.0
-		elif relativeDirection < -90 or (relativeDirection == -90.0 and self.motors[0].offset < 0):
-			reversedDirection = True
-			relativeDirection = relativeDirection + 180.0
+		reversedDirection = inverse
+		if(direction > 40 and direction <= 45)
+			direction = 40
 		
+		if(direction > 45 and direction < 50)
+			direction = 50
+				
+		if(direction > 85 and direction < 90)
+			direction = 85
+			
+		if(direction > 260 and direction < 265)
+			direction = 265	
+			
+		if(direction > 310 and direction <= 315)
+			direction = 310
+		
+		if(direction > 315 and direction < 320)
+			direction = 320
+							
+		if (direction >= 315 or direction <= 40)
+			if relativeDirection > 90 or (relativeDirection == 90):
+				reversedDirection =  not inverse
+				relativeDirection = relativeDirection - 180.0
+			elif relativeDirection < -90 or (relativeDirection == -90.0):
+				reversedDirection =  not inverse
+				relativeDirection = relativeDirection + 180.0
+				
+		if direction > 50 and :
+			if (preferredDirection == "right")
+				relativeDirection = direction
+				reversedDirection =  inverse
+			if (preferredDirection == "left")
+				reversedDirection =  not inverse
+				
+		if direction < 315:
+			if (preferredDirection == "left")
+				relativeDirection = direction - 180
+				reversedDirection =  inverse
+			if (preferredDirection == "right")
+				reversedDirection =  not inverse
+				
+		return relativeDirection
+	
+	def moveToward(self, direction, completionRatio = 0.0):
+		relativeDirection = getRelativeDirection(direction)
+		#print("NEW MOVE")
 		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
 		currentTime = completionRatio * totalTime
 		
