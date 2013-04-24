@@ -1,8 +1,11 @@
 import time
 import math
-#from Spider import *
-#from Config import *
+from Spider import *
+from Config import *
+from Leg import *
 import threading
+import pydyn.dynamixel as dyn
+import pydyn
 from pypad import *
 
 class GamepadHandler(threading.Thread):
@@ -27,40 +30,68 @@ class GamepadHandler(threading.Thread):
 					
 					direction = math.degrees(math.atan2(y, x))
 					#self.spider.currentDirection = direction
+			else:
+				time.sleep(0.5)
 
-if __name__ == "__main__":	
-	#ctrl = dyn.create_controller(verbose = False, motor_range = [0, 20])
-	#spider = Spider(configLegs(ctrl.motors, simulator = False))
-	line = ""
-	thread = GamepadHandler(None)
-	thread.setDaemon(True)
-	thread.start()
-	
-	while line != "quit":
-		line = raw_input(">> ")
-		if line == "help":
-			print("help: print the available commands")
-		elif line == "joystick":
-			GamepadHandler.gamepad = PyPad('/dev/input/js0')
-			print("Joystick Enabled")
+class TerminalThread(threading.Thread):
+	def __init__(self, spider):
+		threading.Thread.__init__(self)
+		self.spider = spider
+		
+	def run(self):
+		line = ""
+		while line != "quit":
+			line = raw_input(">> ")
+			if line == "help":
+				print("help: print the available commands")
+				print("joystick: enable the joystick to control the spider")
+				print("goto [x] [y]: move the spider to the give position")
+				print("move [direction]: move the spider toward the given direction")
+				print("stop: stops the spider")
+				print("quit: quits the program")
 			
-		elif line.startswith("goto"):
-			args = line.split(" ")
-			if len(args) == 3:
-				x = float(args[1])
-				y = float(args[2])
-				#spider.currentDirection = math.degrees(math.atan2(y, x))
-			else:
-				print("Invalid usage.")
-		elif line.startswith("move"):
-			args = line.split(" ")
-			if len(args == 2):
+			elif line == "joystick":
+				GamepadHandler.gamepad = PyPad('/dev/input/js0')
+				print("Joystick Enabled")
+			
+			elif line.startswith("goto"):
+				args = line.split(" ")
+				if len(args) == 3:
+					x = float(args[1])
+					y = float(args[2])
+					spider.currentDirection = math.degrees(math.atan2(y, x))
+				else:
+					print("Invalid usage.")
+			elif line == "stop":
+				spider.moving = False
+			elif line.startswith("move"):
+				args = line.split(" ")
+				if len(args) == 2:
+					spider.moving = True
+					spider.currentDirection = float(args[1])
+					print("moving toward ", float(args[1]))
+				else:
+					print("Invalid Usage.")
+			elif line == "quit" or line == "":
 				pass
-				#spider.currentDirection = float(args[1])
 			else:
-				print("Invalid Usage.")
-		elif line == "quit":
-			pass
-		else:
-			print("Unknown command")
+				print("Unknown command")
+			
+if __name__ == "__main__":	
+	ctrl = dyn.create_controller(verbose = False, motor_range = [0, 20])
+	spider = Spider(configLegs(ctrl.motors, simulator = False))
+	gamepadThread = GamepadHandler(spider)
+	gamepadThread.daemon = True
+	gamepadThread.start()
+
+	terminalThread = TerminalThread(spider)
+	terminalThread.daemon = True
+	terminalThread.start()
+	
+	try:
+		while True:
+			spider.move(startNow = False)
+	except Exception:
+		print ("Exception ++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
 

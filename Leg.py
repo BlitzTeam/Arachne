@@ -1,21 +1,19 @@
-import numpy
-import sys, time
+import time
 import pydyn.dynamixel as dyn
 import math
 import pydyn
 from Config import *
-from Spider import *
 from Motion import *
 from constants import *
 
 class Leg:
-	#a1 = 49
-	#a2 = -14
 	a = 60
 	c = 24
 	b = 93
 	d = 50
 	
+	groundHeight = 80.0
+	liftHeight = 50.0
 	liftTime = 0.3
 	forwardTime = 0.3
 	pullTime = 1.0
@@ -29,7 +27,7 @@ class Leg:
 		self.moves = []
 		
 	def initAtGroundHeight(self):
-		self.setPosition(50.0, 0, Spider.groundHeight)
+		self.setPosition(50.0, 0, Leg.groundHeight)
 
 	def getMotors(self):
 		return self.motors
@@ -56,14 +54,14 @@ class Leg:
 
 	@staticmethod
 	def locationToAngle(x, y, z):
-		print("location to angle")
-		print("x,y,z",x,y,z)
+		#print("location to angle")
+		#print("x,y,z",x,y,z)
 		
 		alpha = 90 - math.degrees(math.atan2(x, y)) #degrees
 		p = math.sqrt(x**2 + y**2) - Leg.d
 		l = math.sqrt(p**2 + z**2)
 		
-		print("z,l", z, l)
+		#print("z,l", z, l)
 		o3 = math.acos(z / l) #radians
 		
 		m = math.sqrt(Leg.a**2 + Leg.c**2)
@@ -96,7 +94,7 @@ class Leg:
 			self.moves.append(LegMotion(tmp, currentPosition, time / Leg.motionResolution))
 	
 	def moveToward(self, direction, completionRatio = 0.0):
-		print("NEW MOVE")
+		#print("NEW MOVE")
 	
 		relativeDirection = self.orientation - direction
 		relativeDirection = (relativeDirection + 180) % 360 - 180 # direction between -180 and +180 degrees
@@ -118,11 +116,11 @@ class Leg:
 		alpha = relativeDirection
 		
 		x, y = Leg.computeXY(alpha, pMax if reversedDirection else pMin)
-		oldValues = Leg.locationToAngle(x, y, Spider.groundHeight)
+		oldValues = Leg.locationToAngle(x, y, Leg.groundHeight)
 		
 		#lift
 		x, y = Leg.computeXY(alpha, pAve)
-		newValues = Leg.locationToAngle(x, y, Spider.liftHeight)
+		newValues = Leg.locationToAngle(x, y, Leg.liftHeight)
 		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.liftTime)
 		if currentTime < Leg.liftTime:
 			self.scheduleMove(oldValues, newValues, Leg.liftTime - currentTime) # Schedule the lifting motion
@@ -133,7 +131,7 @@ class Leg:
 		#forward
 		x,y = Leg.computeXY(alpha, pMin if reversedDirection else pMax)
 		oldValues = newValues
-		newValues = Leg.locationToAngle(x, y, Spider.groundHeight)
+		newValues = Leg.locationToAngle(x, y, Leg.groundHeight)
 		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.forwardTime)
 		if currentTime < Leg.forwardTime:
 			self.scheduleMove(oldValues, newValues, Leg.forwardTime - currentTime) # Schedule the forward motion
@@ -144,7 +142,7 @@ class Leg:
 		#pull
 		x,y = Leg.computeXY(alpha, pMax if reversedDirection else pMin)
 		oldValues = newValues
-		newValues = Leg.locationToAngle(x, y, Spider.groundHeight)
+		newValues = Leg.locationToAngle(x, y, Leg.groundHeight)
 		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.pullTime)
 		if currentTime < Leg.pullTime:
 			self.scheduleMove(oldValues, newValues, Leg.pullTime - currentTime) # Schedule the backward motion
@@ -178,23 +176,5 @@ class Leg:
 		
 	def hasScheduledMove(self):
 		return len(self.moves) != 0
-		
-if __name__ == '__main__':
-	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
-	
-	l = configLegs(ctrl.motors, simulator = False)
-	s = Spider(l)
-	#s.init()
-	
-	for l in s.getLegs():
-		l.setAngle(150, 150, 150)
 
-	leg = s.getLeg(1)
-	#leg.setRealAngle(10, 20, 10)
-	
-	while(True):
-		if not leg.hasScheduledMove():
-			leg.moveToward(30.0)
-		leg.move()
-		
-	
+
