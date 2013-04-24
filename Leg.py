@@ -93,7 +93,6 @@ class Leg:
 			currentPosition[2] += dz
 			self.moves.append(LegMotion(tmp, currentPosition, time / Leg.motionResolution))
 	
-	
 	def getRelativeDirection(self, direction):
 		inverse = False
 		if direction <= 270 or direction >= 90
@@ -106,7 +105,6 @@ class Leg:
 		reversedDirection = inverse
 		if(direction > 40 and direction <= 45)
 			direction = 40
-		
 		if(direction > 45 and direction < 50)
 			direction = 50
 				
@@ -149,6 +147,8 @@ class Leg:
 	def moveToward(self, direction, completionRatio = 0.0):
 		relativeDirection = getRelativeDirection(direction)
 		#print("NEW MOVE")
+		if not reversedDirection:
+			relativeDirection += turnAngle
 		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
 		currentTime = completionRatio * totalTime
 		
