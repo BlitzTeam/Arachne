@@ -16,8 +16,8 @@ class Leg:
 	b = 93
 	d = 50
 	
-	liftTime = 0.5
-	forwardTime = 0.5
+	liftTime = 0.3
+	forwardTime = 0.3
 	pullTime = 1.0
 	motionResolution = 1.0
 
@@ -93,7 +93,7 @@ class Leg:
 			currentPosition[0] += dx
 			currentPosition[1] += dy
 			currentPosition[2] += dz
-			self.moves.append(LegMotion(currentPosition, tmp, time / Leg.motionResolution))
+			self.moves.append(LegMotion(tmp, currentPosition, time / Leg.motionResolution))
 	
 	def moveToward(self, direction, completionRatio = 0.0):
 		print("NEW MOVE")
@@ -113,7 +113,7 @@ class Leg:
 		currentTime = completionRatio * totalTime
 		
 		pMin = 50
-		pMax = 100
+		pMax = 150
 		pAve = pMin + (pMax - pMin) / 2
 		alpha = relativeDirection
 		
@@ -188,13 +188,13 @@ if __name__ == '__main__':
 	
 	for l in s.getLegs():
 		l.setAngle(150, 150, 150)
-	print(Leg.computeServoAngles(10, 10, 10))
+
 	leg = s.getLeg(1)
 	#leg.setRealAngle(10, 20, 10)
-	
 	
 	while(True):
 		if not leg.hasScheduledMove():
 			leg.moveToward(30.0)
 		leg.move()
+		
 	
