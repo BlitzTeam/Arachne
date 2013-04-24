@@ -14,11 +14,12 @@ class Leg:
 	a = 60
 	c = 24
 	b = 93
+	d = 50
 	
 	liftTime = 0.5
 	forwardTime = 0.5
 	pullTime = 1.0
-	motionResolution = 10.0
+	motionResolution = 1.0
 
 	def __init__(self, orientation, x , y , servo_up, servo_middle, servo_down):
 		self.orientation = orientation
@@ -48,17 +49,6 @@ class Leg:
 		self.motors[1].setAngle(b)
 		self.motors[2].setAngle(c)
 
-	"""				
-	def angleToPosition(self, alpha, beta, gamma, relative = True):
-		if relative == True:
-			return (numpy.cos(alpha) * (Leg.a1 + Leg.b * numpy.cos(beta) + Leg.c * numpy.cos(beta + gamma)),
-								numpy.sin(alpha) * (Leg.a1 + Leg.b * numpy.cos(beta) + Leg.c * numpy.cos(beta + gamma)),
-								Leg.a2 + Leg.b * numpy.sin(beta) +  Leg.c * numpy.cos(beta + gamma))
-		else:
-			rel = self.angleToPosition(alpha, beta, gamma, True)
-		return() # TODO: Implementation
-	"""
-
 	def setPosition(self, x, y, z):
 		angles = Leg.locationToAngle(x, y, z)
 		self.setAngle(angles[0], angles[1], angles[2])
@@ -69,22 +59,22 @@ class Leg:
 		print("location to angle")
 		print("x,y,z",x,y,z)
 		
-		alpha = 90 - math.degrees(math.atan2(x, y))
-		p = math.sqrt(x**2 + y**2)
+		alpha = 90 - math.degrees(math.atan2(x, y)) #degrees
+		p = math.sqrt(x**2 + y**2) - Leg.d
 		l = math.sqrt(p**2 + z**2)
 		
 		print("z,l", z, l)
-		o3 = math.acos(z / l)
+		o3 = math.acos(z / l) #radians
 		
 		m = math.sqrt(Leg.a**2 + Leg.c**2)
-		o4 = math.acos(Leg.a / m)
+		o4 = math.acos(Leg.a / m) #radians
 		
-		o5 = math.acos((m**2 + l**2 - Leg.b**2) / (2 * m * l))
-		o6 = math.acos((m**2 + Leg.b**2 - l**2) / (2 * m * Leg.b))
-		o7 = 180 - math.degrees(o4) - 90
+		o5 = math.acos((m**2 + l**2 - Leg.b**2) / (2 * m * l)) #radians
+		o6 = math.acos((m**2 + Leg.b**2 - l**2) / (2 * m * Leg.b)) #radians
+		o7 = 180 - math.degrees(o4) - 90 #degrees
 		
-		gamma = 180 - o7 - math.degrees(o6)
-		beta = math.degrees(o3) + math.degrees(o5) - 90 + math.degrees(o4)
+		gamma = 180 - o7 - math.degrees(o6) #degrees
+		beta = math.degrees(o3) + math.degrees(o5) - 90 + math.degrees(o4) #degrees
 
 		return Leg.computeServoAngles(alpha, beta, gamma)
 		
@@ -172,7 +162,7 @@ class Leg:
 		
 	@staticmethod
 	def computeServoAngles(alpha, beta, gamma): #compute the real values given to the servos
-		return (alpha + 150, beta + 150, 180 - gamma - 30)
+		return (alpha + 150, -beta + 150, 180 - gamma - 30)
 	
 	def move(self): # move the leg according to the current self.move[0], does nothing if len(self.move) == 0
 		if len(self.moves) != 0:
@@ -190,15 +180,21 @@ class Leg:
 		return len(self.moves) != 0
 		
 if __name__ == '__main__':
-	#ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
+	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
 	
-	#l = configLegs(ctrl.motors, simulator = False)
-	#s = Spider(l)
+	l = configLegs(ctrl.motors, simulator = False)
+	s = Spider(l)
 	#s.init()
 	
-	#for l in s.getLegs():
-		#l.setAngle(150, 150, 150)
+	for l in s.getLegs():
+		l.setAngle(150, 150, 150)
+	print(Leg.computeServoAngles(10, 10, 10))
+	leg = s.getLeg(1)
+	#leg.setRealAngle(10, 20, 10)
 	
-	leg = Leg(0, 0, 0, 0, 0, 0)
-	leg.scheduleMove((0,0,0), (10, 1000, 2), 5)
+	
+	while(True):
+		if not leg.hasScheduledMove():
+			leg.moveToward(30.0)
+		leg.move()
 	
