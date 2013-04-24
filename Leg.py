@@ -1,7 +1,7 @@
 import time
-import pydyn.dynamixel as dyn
+#import pydyn.dynamixel as dyn
+#import pydyn
 import math
-import pydyn
 from Config import *
 from Motion import *
 from constants import *
@@ -19,12 +19,13 @@ class Leg:
 	pullTime = 1.0
 	motionResolution = 1.0
 
-	def __init__(self, orientation, x , y , servo_up, servo_middle, servo_down, offset = "left"):
+	def __init__(self, orientation, x , y , servo_up, servo_middle, servo_down, preferredDirection = "left"):
 		self.orientation = orientation
 		self.x = x # top down view
 		self.y = y # top down view
 		self.motors = (servo_up, servo_middle, servo_down)
 		self.moves = []
+		self.preferredDirection = preferredDirection
 		
 	def initAtGroundHeight(self):
 		self.setPosition(50.0, 0, Leg.groundHeight)
@@ -93,60 +94,73 @@ class Leg:
 			currentPosition[2] += dz
 			self.moves.append(LegMotion(tmp, currentPosition, time / Leg.motionResolution))
 	
+	def getRelativeDirection2(self, direction):		
+		relativeDirection = direction - self.orientation
+		relativeDirection = (relativeDirection + 180) % 360 - 180 # direction between -180 and +180 degrees
+		reversedDirection = False
+
+		if relativeDirection > 90 or (relativeDirection == 90 and self.preferredDirection == 'left'):
+			reversedDirection = True
+			relativeDirection = relativeDirection - 180.0
+		elif relativeDirection < -90 or (relativeDirection == -90 and self.preferredDirection == 'right'):
+			reversedDirection = True
+			relativeDirection = relativeDirection + 180.0
+			
+		return relativeDirection, reversedDirection
+	
 	def getRelativeDirection(self, direction):
 		inverse = False
-		if direction <= 270 or direction >= 90
+		if direction <= 270 or direction >= 90:
 			inverse = True
 			direction = (direction + 180) % 360
-			
 		
 		relativeDirection = self.orientation - direction
 		relativeDirection = (relativeDirection + 180) % 360 - 180 # direction between -180 and +180 degrees
 		reversedDirection = inverse
-		if(direction > 40 and direction <= 45)
+		
+		if direction > 40 and direction <= 45:
 			direction = 40
-		if(direction > 45 and direction < 50)
+		if direction > 45 and direction < 50:
 			direction = 50
 				
-		if(direction > 85 and direction < 90)
+		if direction > 85 and direction < 90:
 			direction = 85
 			
-		if(direction > 260 and direction < 265)
+		if direction > 260 and direction < 265:
 			direction = 265	
 			
-		if(direction > 310 and direction <= 315)
+		if direction > 310 and direction <= 315:
 			direction = 310
 		
-		if(direction > 315 and direction < 320)
+		if direction > 315 and direction < 320:
 			direction = 320
 							
-		if (direction >= 315 or direction <= 40)
-			if relativeDirection > 90 or (relativeDirection == 90):
+		if direction >= 315 or direction <= 40:
+			if relativeDirection > 90 or relativeDirection == 90:
 				reversedDirection =  not inverse
 				relativeDirection = relativeDirection - 180.0
-			elif relativeDirection < -90 or (relativeDirection == -90.0):
+			elif relativeDirection < -90 or relativeDirection == -90.0:
 				reversedDirection =  not inverse
 				relativeDirection = relativeDirection + 180.0
 				
-		if direction > 50 and :
-			if (preferredDirection == "right")
+		if direction > 50:
+			if self.preferredDirection == "right":
 				relativeDirection = direction
 				reversedDirection =  inverse
-			if (preferredDirection == "left")
-				reversedDirection =  not inverse
+			if self.preferredDirection == "left":
+				reversedDirection = not inverse
 				
 		if direction < 315:
-			if (preferredDirection == "left")
+			if self.preferredDirection == "left":
 				relativeDirection = direction - 180
-				reversedDirection =  inverse
-			if (preferredDirection == "right")
-				reversedDirection =  not inverse
+				reversedDirection = inverse
+			if self.preferredDirection == "right":
+				reversedDirection = not inverse
 				
 		return relativeDirection
 	
-	def moveToward(self, direction, completionRatio = 0.0):
+	def moveToward(self, direction, completionRatio = 0.0, turnAngle = 0.0):
 		relativeDirection = getRelativeDirection(direction)
-		#print("NEW MOVE")
 		if not reversedDirection:
 			relativeDirection += turnAngle
 		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
@@ -195,9 +209,6 @@ class Leg:
 		f = math.tan(math.radians(alpha))
 		x = math.sqrt(p**2 / (1 + f**2))
 		y = x * f
-		#print("computeXY")
-		#print("x,y, alpha, p f")
-		#print(x,y, alpha, p, f)
 		return (x, y)
 		
 	@staticmethod

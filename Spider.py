@@ -1,6 +1,6 @@
 import math
-import pydyn.dynamixel as dyn
-import pydyn
+#import pydyn.dynamixel as dyn
+#import pydyn
 import thread
 from Config import *
 import time
@@ -78,9 +78,11 @@ class Spider:
 				
 
 if __name__ == "__main__":
-	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])	
-	legs = configLegs(ctrl.motors, simulator = False)
-	s = Spider(legs)
-	s.move(10.0, Gait.Tripod, turnAngle = 15.0)
-	#s.rotate(Gait.Tripod)
+	#ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
+	motors = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]	
+	legs = configLegs(motors, simulator = False)
+	for i in range(-180, 180, 45):
+		print('Angle ' + str(i)) 
+		for l in legs:
+			print(l.orientation, l.preferredDirection, l.getRelativeDirection2(i))
 
