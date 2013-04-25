@@ -12,8 +12,8 @@ class Leg:
 	b = 93
 	d = 50
 	
-	groundHeight = 100.0
-	liftHeight = 70.0
+	groundHeight = 80.0
+	liftHeight = 40.0
 	liftTime = 0.3
 	forwardTime = 0.3
 	pullTime = 1.0
@@ -54,15 +54,11 @@ class Leg:
 
 
 	@staticmethod
-	def locationToAngle(x, y, z):
-		#print("location to angle")
-		#print("x,y,z",x,y,z)
-		
+	def locationToAngle(x, y, z):		
 		alpha = 90 - math.degrees(math.atan2(x, y)) #degrees
 		p = math.sqrt(x**2 + y**2) - Leg.d
 		l = math.sqrt(p**2 + z**2)
 		
-		#print("z,l", z, l)
 		o3 = math.acos(z / l) #radians
 		
 		m = math.sqrt(Leg.a**2 + Leg.c**2)
@@ -74,7 +70,7 @@ class Leg:
 		
 		gamma = 180 - o7 - math.degrees(o6) #degrees
 		beta = math.degrees(o3) + math.degrees(o5) - 90 + math.degrees(o4) #degrees
-
+		
 		return Leg.computeServoAngles(alpha, beta, gamma)
 		
 	def getCurrentMove(self):
@@ -95,23 +91,20 @@ class Leg:
 			self.moves.append(LegMotion(tmp, currentPosition, time / Leg.motionResolution))
 	
 	def getRelativeDirection(self, direction):
+		
 		nb = math.floor(direction // 90)
 		tmpDirection = direction % 90
 		if tmpDirection > 40 and tmpDirection <= 45:
 			tmpDirection = 40
 		if tmpDirection > 45 and tmpDirection < 50:
 			tmpDirection = 50
-		
 		direction = tmpDirection + ( 90 * nb)
 		
-		
-		relativeDirection = direction - self.orientation
+		relativeDirection = self.orientation - direction
 		relativeDirection = (relativeDirection + 180) % 360 - 180 # direction between -180 and +180 degrees
 		reversedDirection = False
 
-		
-		if relativeDirection > 90 or (relativeDirection == 90 and self.preferredDirection == 'left'):
-
+		if relativeDirection > 90 or (relativeDirection == 90 and self.preferredDirection == 'right'):
 			reversedDirection = True
 			relativeDirection = relativeDirection - 180.0
 		elif relativeDirection < -90 or (relativeDirection == -90 and self.preferredDirection == 'left'):
@@ -121,14 +114,12 @@ class Leg:
 		return relativeDirection, reversedDirection
 	
 	def moveToward(self, direction, completionRatio = 0.0, turnAngle = 0.0):
-		print("moveToward", direction, turnAngle)
-		relativeDirection, reversedDirection = self.getRelativeDirection2(direction)
-		print(relativeDirection)
+		relativeDirection, reversedDirection = self.getRelativeDirection(direction)
 		if reversedDirection:
-			relativeDirection += turnAngle
+			relativeDirection += turnAngle / 2
 		else:
-			relativeDirection -= turnAngle
-		print(relativeDirection)
+			relativeDirection -= turnAngle / 2
+		relationDirection = min(max(relativeDirection, -90), 90)
 		
 		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
 		currentTime = completionRatio * totalTime
@@ -175,6 +166,7 @@ class Leg:
 	def computeXY(alpha, p):
 		f = math.tan(math.radians(alpha))
 		x = math.sqrt(p**2 / (1 + f**2))
+		x = -x if abs(alpha) > 90 else x
 		y = x * f
 		return (x, y)
 		
