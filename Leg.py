@@ -12,8 +12,8 @@ class Leg:
 	b = 93
 	d = 50
 	
-	groundHeight = 80.0
-	liftHeight = 50.0
+	groundHeight = 100.0
+	liftHeight = 70.0
 	liftTime = 0.3
 	forwardTime = 0.3
 	pullTime = 1.0
@@ -28,7 +28,7 @@ class Leg:
 		self.preferredDirection = preferredDirection
 		
 	def initAtGroundHeight(self):
-		self.setPosition(50.0, 0, Leg.groundHeight)
+		self.setPosition(100.0, 0, Leg.groundHeight)
 
 	def getMotors(self):
 		return self.motors
@@ -95,14 +95,14 @@ class Leg:
 			self.moves.append(LegMotion(tmp, currentPosition, time / Leg.motionResolution))
 	
 	def getRelativeDirection2(self, direction):		
-		relativeDirection = direction - self.orientation
+		relativeDirection = self.orientation - direction
 		relativeDirection = (relativeDirection + 180) % 360 - 180 # direction between -180 and +180 degrees
 		reversedDirection = False
 
-		if relativeDirection > 90 or (relativeDirection == 90 and self.preferredDirection == 'left'):
+		if relativeDirection > 90 or (relativeDirection == 90 and self.preferredDirection == 'right'):
 			reversedDirection = True
 			relativeDirection = relativeDirection - 180.0
-		elif relativeDirection < -90 or (relativeDirection == -90 and self.preferredDirection == 'right'):
+		elif relativeDirection < -90 or (relativeDirection == -90 and self.preferredDirection == 'left'):
 			reversedDirection = True
 			relativeDirection = relativeDirection + 180.0
 			
@@ -160,9 +160,15 @@ class Leg:
 		return relativeDirection
 	
 	def moveToward(self, direction, completionRatio = 0.0, turnAngle = 0.0):
-		relativeDirection = getRelativeDirection(direction)
-		if not reversedDirection:
+		print("moveToward", direction, turnAngle)
+		relativeDirection, reversedDirection = self.getRelativeDirection2(direction)
+		print(relativeDirection)
+		if reversedDirection:
 			relativeDirection += turnAngle
+		else:
+			relativeDirection -= turnAngle
+		print(relativeDirection)
+		
 		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
 		currentTime = completionRatio * totalTime
 		

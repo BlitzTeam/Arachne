@@ -1,6 +1,6 @@
 import math
-#import pydyn.dynamixel as dyn
-#import pydyn
+import pydyn.dynamixel as dyn
+import pydyn
 import thread
 from Config import *
 import time
@@ -8,7 +8,6 @@ from constants import *
 
 class Spider:	
 	def __init__(self, legs):
-		#legs = array of Leg
 		self.legs = legs
 		self.currentDirection = 0.0
 		self.moving = False
@@ -16,7 +15,7 @@ class Spider:
 		
 	def init(self):
 		for l in self.legs:
-			l.setPosition(40, 0, Config.groundHeight)
+			l.initAtGroundHeight()
 				
 	def getLegs(self):
 		return self.legs
@@ -37,11 +36,10 @@ class Spider:
 		
 		for l in self.legs:
 			l.move()
-			time.sleep(0.01)
+			time.sleep(0.02)
 		time.sleep(1.0)
 		for l in self.legs:
 			l.getCurrentMove().start()
-			time.sleep(0.01)
 
 	def move(self, angle = 0.0, gait = Gait.Tripod, startNow = True, turnAngle = 0.0): # problems between -60 and 180 degrees
 			self.currentDirection = angle
@@ -50,7 +48,7 @@ class Spider:
 				self.moving = True
 			else:
 				while not self.moving:
-					time.sleep(0.1)
+					time.sleep(0.2)
 			
 			self.initLegsPosition(self.currentDirection, gait, turnAngle = self.turnAngle)
 			# walk
@@ -78,11 +76,11 @@ class Spider:
 				
 
 if __name__ == "__main__":
-	#ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
-	motors = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]	
-	legs = configLegs(motors, simulator = False)
+	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
+	legs = configLegs(ctrl.motors, simulator = False)
 	for i in range(-180, 180, 45):
 		print('Angle ' + str(i)) 
 		for l in legs:
 			print(l.orientation, l.preferredDirection, l.getRelativeDirection2(i))
-
+			l.setRealAngle(l.getRelativeDirection2(i)[0], 0, 0)
+		raw_input()

@@ -12,6 +12,7 @@ class GamepadHandler(threading.Thread):
 	gamepad = None
 	xAxis = 1
 	yAxis = 0
+	noiseMin = 0.3
 
 	def __init__(self, spider):
 		threading.Thread.__init__(self)
@@ -22,14 +23,13 @@ class GamepadHandler(threading.Thread):
 		while True:
 			if GamepadHandler.gamepad != None:
 				event = GamepadHandler.gamepad.getEvent()
-				if event.eventType == 'axis' and (event.index == GamepadHandler.xAxis or event.index == GamepadHandler.yAxis) :
+				if event.eventType == 'axis' and (event.index == GamepadHandler.xAxis or event.index == GamepadHandler.yAxis):
 					if event.index == GamepadHandler.xAxis:
 						x = -event.value
 					elif event.index == GamepadHandler.yAxis:
 						y = event.value
 					
 					direction = math.degrees(math.atan2(y, x))
-					direction = self.spider.currentDirection * 0.99 + (self.spider.currentDirection - direction) * 0.01
 					self.spider.currentDirection = direction
 					print(direction)
 			else:
@@ -82,7 +82,7 @@ class TerminalThread(threading.Thread):
 				print("Unknown command")
 			
 if __name__ == "__main__":	
-	ctrl = dyn.create_controller(verbose = False, motor_range = [0, 20])
+	ctrl = dyn.create_controller(verbose = False, timeout = 0.5, motor_range = [0, 20])
 	spider = Spider(configLegs(ctrl.motors, simulator = False))
 
 	gamepadThread = GamepadHandler(spider)
