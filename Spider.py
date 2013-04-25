@@ -108,6 +108,10 @@ class Spider:
 		return distance / Spider.walkSpeed
 	
 	@staticmethod
+	def positionToTurnAngle(x,y):
+		distance = 
+	
+	@staticmethod
 	def angleToTime(angle):
 		return angle / Spider.rotationSpeed
 				

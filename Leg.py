@@ -119,7 +119,7 @@ class Leg:
 			relativeDirection += turnAngle / 2
 		else:
 			relativeDirection -= turnAngle / 2
-		relationDirection = min(max(relativeDirection, -90), 90)
+		relativeDirection = min(max(relativeDirection, -90), 90)
 		
 		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
 		currentTime = completionRatio * totalTime

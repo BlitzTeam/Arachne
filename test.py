@@ -31,7 +31,7 @@ def testWalk():
 		m.moving_speed = 100
 	legs = configLegs(ctrl.motors, simulator = False)
 	spider = Spider(legs)
-	spider.move(0.0, turnAngle = 20.0)
+	spider.move(90.0, turnAngle = 20.0)
 	
 def testRotate():
 	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20], timeout =  0.1)
