@@ -94,11 +94,22 @@ class Leg:
 			currentPosition[2] += dz
 			self.moves.append(LegMotion(tmp, currentPosition, time / Leg.motionResolution))
 	
-	def getRelativeDirection2(self, direction):		
+	def getRelativeDirection(self, direction):
+		nb = math.floor(direction // 90)
+		tmpDirection = direction % 90
+		if tmpDirection > 40 and tmpDirection <= 45:
+			tmpDirection = 40
+		if tmpDirection > 45 and tmpDirection < 50:
+			tmpDirection = 50
+		
+		direction = tmpDirection + ( 90 * nb)
+		
+		
 		relativeDirection = direction - self.orientation
 		relativeDirection = (relativeDirection + 180) % 360 - 180 # direction between -180 and +180 degrees
 		reversedDirection = False
 
+		
 		if relativeDirection > 90 or (relativeDirection == 90 and self.preferredDirection == 'left'):
 			reversedDirection = True
 			relativeDirection = relativeDirection - 180.0
@@ -107,57 +118,6 @@ class Leg:
 			relativeDirection = relativeDirection + 180.0
 			
 		return relativeDirection, reversedDirection
-	
-	def getRelativeDirection(self, direction):
-		inverse = False
-		if direction <= 270 or direction >= 90:
-			inverse = True
-			direction = (direction + 180) % 360
-		
-		relativeDirection = self.orientation - direction
-		relativeDirection = (relativeDirection + 180) % 360 - 180 # direction between -180 and +180 degrees
-		reversedDirection = inverse
-		
-		if direction > 40 and direction <= 45:
-			direction = 40
-		if direction > 45 and direction < 50:
-			direction = 50
-				
-		if direction > 85 and direction < 90:
-			direction = 85
-			
-		if direction > 260 and direction < 265:
-			direction = 265	
-			
-		if direction > 310 and direction <= 315:
-			direction = 310
-		
-		if direction > 315 and direction < 320:
-			direction = 320
-							
-		if direction >= 315 or direction <= 40:
-			if relativeDirection > 90 or relativeDirection == 90:
-				reversedDirection =  not inverse
-				relativeDirection = relativeDirection - 180.0
-			elif relativeDirection < -90 or relativeDirection == -90.0:
-				reversedDirection =  not inverse
-				relativeDirection = relativeDirection + 180.0
-				
-		if direction > 50:
-			if self.preferredDirection == "right":
-				relativeDirection = direction
-				reversedDirection =  inverse
-			if self.preferredDirection == "left":
-				reversedDirection = not inverse
-				
-		if direction < 315:
-			if self.preferredDirection == "left":
-				relativeDirection = direction - 180
-				reversedDirection = inverse
-			if self.preferredDirection == "right":
-				reversedDirection = not inverse
-				
-		return relativeDirection
 	
 	def moveToward(self, direction, completionRatio = 0.0, turnAngle = 0.0):
 		relativeDirection = getRelativeDirection(direction)
@@ -229,5 +189,4 @@ class Leg:
 		
 	def hasScheduledMove(self):
 		return len(self.moves) != 0
-
 
