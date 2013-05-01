@@ -103,13 +103,19 @@ class Spider:
 				l.move()
 				time.sleep(0.01)
 				
+	def goto(self, x, y, braveMode = True):
+		if braveMode:
+			minDist = min(x,y)
+			self.move(
+		else:
+			dist = math.sqrt(x**2 + y**2)
+			angle = math.atan2(y, x)
+			self.rotate(angle = angle)
+			self.walk
+				
 	@staticmethod
 	def distanceToTime(distance):
 		return distance / Spider.walkSpeed
-	
-	@staticmethod
-	def positionToTurnAngle(x,y):
-		distance = 
 	
 	@staticmethod
 	def angleToTime(angle):
