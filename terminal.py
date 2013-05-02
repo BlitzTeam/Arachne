@@ -8,30 +8,49 @@ import pydyn.dynamixel as dyn
 import pydyn
 from pypad import *
 
-class GamepadHandler(threading.Thread):
-	gamepad = None
+class GamepadReader(threading.Thread):
 	xAxis = 1
 	yAxis = 0
 	noiseMin = 0.3
 
-	def __init__(self, spider):
+	def __init__(self):
 		threading.Thread.__init__(self)
-		self.spider = spider
 		
-	def run(self):	
-		x, y = 0.0, 0.0	
+	def run(self):			
 		while True:
 			if GamepadHandler.gamepad != None:
 				event = GamepadHandler.gamepad.getEvent()
-				if event.eventType == 'axis' and (event.index == GamepadHandler.xAxis or event.index == GamepadHandler.yAxis):
-					if event.index == GamepadHandler.xAxis:
-						x = -event.value
-					elif event.index == GamepadHandler.yAxis:
-						y = event.value
-					
-					direction = math.degrees(math.atan2(y, x))
-					self.spider.currentDirection = direction
-					print(direction)
+				if event.eventType == 'axis' and event.index == GamepadReader.xAxis and math.sqrt(event.value**2 + GamepadHandler.yValue**2) > GamepadReader.noiseMin:
+					GamepadHandler.xValue = -event.value
+				elif event.eventType == 'axis' and event.index == GamepadReader.yAxis and math.sqrt(event.value**2 + GamepadHandler.xValue**2) > GamepadReader.noiseMin:
+					GamepadHandler.yValue = event.value
+			else:
+				time.sleep(0.5)
+
+class GamepadHandler(threading.Thread):
+	gamepad = None
+	xValue = 0.0
+	yValue = 0.0
+	maxTurnSpeed = 1.0
+
+	def __init__(self, spider):
+		threading.Thread.__init__(self)
+		self.readerThread = GamepadReader()
+		self.readerThread.daemon = True
+		self.readerThread.start()
+		self.spider = spider
+			
+	def run(self):	
+		direction = 0.0
+		
+		while True:
+			if GamepadHandler.gamepad != None:
+				x = GamepadHandler.xValue
+				y = GamepadHandler.yValue
+				direction = direction + min(max(-GamepadHandler.maxTurnSpeed, math.degrees(math.atan2(y, x)) - direction), GamepadHandler.maxTurnSpeed)
+				print(direction)
+				#self.spider.currentDirection = direction
+				time.sleep(0.1)
 			else:
 				time.sleep(0.5)
 
@@ -39,6 +58,7 @@ class TerminalThread(threading.Thread):
 	def __init__(self, spider):
 		threading.Thread.__init__(self)
 		self.spider = spider
+		self.gamepadThread = gamepadThread
 		
 	def run(self):
 		line = ""
@@ -52,7 +72,7 @@ class TerminalThread(threading.Thread):
 				print("stop: stops the spider")
 				print("quit: quits the program")
 			
-			elif line == "joystick":
+			elif line == "joystick" or line == "gamepad":
 				if GamepadHandler.gamepad == None:
 					GamepadHandler.gamepad = PyPad('/dev/input/js0')
 					print("Joystick Enabled")
@@ -81,9 +101,10 @@ class TerminalThread(threading.Thread):
 			else:
 				print("Unknown command")
 			
-if __name__ == "__main__":	
-	ctrl = dyn.create_controller(verbose = False, timeout = 0.5, motor_range = [0, 20])
-	spider = Spider(configLegs(ctrl.motors, simulator = False))
+if __name__ == "__main__":
+	spider = None
+	#ctrl = dyn.create_controller(verbose = False, timeout = 0.5, motor_range = [0, 20])
+	#spider = Spider(configLegs(ctrl.motors, simulator = False))
 
 	gamepadThread = GamepadHandler(spider)
 	gamepadThread.daemon = True
@@ -94,6 +115,7 @@ if __name__ == "__main__":
 	terminalThread.start()
 	
 	while True:
-		spider.move(startNow = False)
+		time.sleep(1.0)
+		#spider.move(startNow = False)
 
 

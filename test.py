@@ -62,7 +62,10 @@ def testLegWalk():
 		if not leg.hasScheduledMove():
 			leg.moveToward(0.0, turnAngle = 0.0)
 		leg.move()
-		
+
+def testGoto():
+	spider = Spider([])
+	spider.goto(-100, -100, mode = MoveMode.Direct)		
 
 def testInit():
 	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
@@ -74,6 +77,7 @@ def testInit():
 if __name__ == '__main__':
 	#testLeg()
 	#testRelativeDirection()
-	testWalk()
+	#testWalk()
+	testGoto()
 	#testLegWalk()
 	#testInit()

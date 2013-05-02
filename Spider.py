@@ -56,7 +56,7 @@ class Spider:
 		for l in self.legs:
 			l.getCurrentMove().start()
 
-	def move(self, angle = 0.0, gait = Gait.Tripod, startNow = True, turnAngle = 0.0, distance = None, duration = None): # problems between -60 and 180 degrees
+	def move(self, angle = 0.0, gait = Gait.Tripod, startNow = True, turnAngle = 0.0, distance = None, duration = None):
 			self.currentDirection = angle
 			self.turnAngle = turnAngle
 			
@@ -84,10 +84,13 @@ class Spider:
 						l.moveToward(self.currentDirection, turnAngle = self.turnAngle)
 					time.sleep(0.01)
 
-	def rotate(self, gait = Gait.Tripod, angle = None, duration = None):
+	def rotate(self, gait = Gait.Tripod, angle = None, duration = None, normalizeAngle = True):
 		rotationAngle = 90.0
 		timer = None
 		if angle != None:
+			if normalizeAngle:
+				angle = (angle + 180.0) % 360 - 180.0
+				rotationAngle = rotationAngle if angle >= 0 else -rotatioAngle # TO BE TESTED
 			duration = Spider.angleToTime(angle)
 		if duration != None:
 			timer = Timer()
@@ -103,15 +106,32 @@ class Spider:
 				l.move()
 				time.sleep(0.01)
 				
-	def goto(self, x, y, braveMode = True):
-		if braveMode:
-			minDist = min(x,y)
-			self.move(
-		else:
+	def goto(self, x, y, mode = True):
+		if mode == MoveMode.Arc: #TODO this case
+			if min(x,y) == x:
+				pass
+				#arc move (x,x)
+				#move (y - x)
+			else:
+				pass
+				#arc move (y,y)
+			
+			#self.move()
+		elif mode == MoveMode.Direct: #TODO inverse x and y
 			dist = math.sqrt(x**2 + y**2)
-			angle = math.atan2(y, x)
+			angle = 90.0 - math.degrees(math.atan2(y, x))
 			self.rotate(angle = angle)
-			self.walk
+			self.move(distance = dist)
+		elif mode == ModeMove.Basic:
+			if y < 0:
+				self.rotate(angle = 180.0)
+				x = -x
+			self.move(distance = y)
+			self.rotate(angle = 90.0 if x > 0 else -90.0 if x < 0 else 0.0)
+			self.move(distance = abs(x))
+		else:
+			print("Warning: Invalid MoveMode in the Spider.goto() function")
+		
 				
 	@staticmethod
 	def distanceToTime(distance):
