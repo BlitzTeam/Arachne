@@ -13,10 +13,10 @@ class Leg:
 	d = 50
 	
 	groundHeight = 80.0
-	liftHeight = 40.0
+	liftHeight = 50.0
 	liftTime = 0.3
 	forwardTime = 0.3
-	pullTime = 1.0
+	pullTime = 0.6
 	motionResolution = 1.0
 
 	def __init__(self, orientation, x , y , servo_up, servo_middle, servo_down, preferredDirection = "left"):
@@ -188,4 +188,7 @@ class Leg:
 		
 	def hasScheduledMove(self):
 		return len(self.moves) != 0
+	
+	def clearScheduledMoves(self):
+		self.moves = []
 

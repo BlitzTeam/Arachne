@@ -12,6 +12,7 @@ class GamepadReader(threading.Thread):
 	xAxis = 1
 	yAxis = 0
 	noiseMin = 0.3
+	aButton = 0
 
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -24,6 +25,9 @@ class GamepadReader(threading.Thread):
 					GamepadHandler.xValue = -event.value
 				elif event.eventType == 'axis' and event.index == GamepadReader.yAxis and math.sqrt(event.value**2 + GamepadHandler.xValue**2) > GamepadReader.noiseMin:
 					GamepadHandler.yValue = event.value
+				elif event.eventType == 'button' and event.index == GamepadReader.aButton and event.value == True:
+					GamepadHandler.aButtonValue = not GamepadHandler.aButtonValue
+					
 			else:
 				time.sleep(0.5)
 
@@ -31,7 +35,8 @@ class GamepadHandler(threading.Thread):
 	gamepad = None
 	xValue = 0.0
 	yValue = 0.0
-	maxTurnSpeed = 1.0
+	maxTurnSpeed = 3.0
+	aButtonValue = True
 
 	def __init__(self, spider):
 		threading.Thread.__init__(self)
@@ -48,8 +53,8 @@ class GamepadHandler(threading.Thread):
 				x = GamepadHandler.xValue
 				y = GamepadHandler.yValue
 				direction = direction + min(max(-GamepadHandler.maxTurnSpeed, math.degrees(math.atan2(y, x)) - direction), GamepadHandler.maxTurnSpeed)
-				print(direction)
-				#self.spider.currentDirection = direction
+				self.spider.turnAngle = direction
+				self.spider.moving = GamepadHandler.aButtonValue
 				time.sleep(0.1)
 			else:
 				time.sleep(0.5)
@@ -76,6 +81,7 @@ class TerminalThread(threading.Thread):
 				if GamepadHandler.gamepad == None:
 					GamepadHandler.gamepad = PyPad('/dev/input/js0')
 					print("Joystick Enabled")
+					self.spider.moving = True
 				else:
 					GamepadHandler.gamepad = None
 			elif line.startswith("goto"):
@@ -103,8 +109,8 @@ class TerminalThread(threading.Thread):
 			
 if __name__ == "__main__":
 	spider = None
-	#ctrl = dyn.create_controller(verbose = False, timeout = 0.5, motor_range = [0, 20])
-	#spider = Spider(configLegs(ctrl.motors, simulator = False))
+	ctrl = dyn.create_controller(verbose = False, timeout = 0.5, motor_range = [0, 20])
+	spider = Spider(configLegs(ctrl.motors, simulator = False))
 
 	gamepadThread = GamepadHandler(spider)
 	gamepadThread.daemon = True
@@ -116,6 +122,6 @@ if __name__ == "__main__":
 	
 	while True:
 		time.sleep(1.0)
-		#spider.move(startNow = False)
+		spider.move(startNow = False)
 
 

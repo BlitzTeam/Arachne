@@ -2,20 +2,6 @@ from Timer import *
 import time
 import math
 
-class ServoMotion(object):
-	def __init__(self, amplitude, period, center, offset = 0.0):
-		self.amplitude = float(amplitude)
-		self.period = float(period)
-		self.center = float(center)
-		self.offset = float(offset)
-		self.motionTimer = Timer()
-
-	def start(self):
-		self.motionTimer.start()
-
-	def currentPosition(self):
-		return math.sin((self.motionTimer.elapsedTime() * 2 * math.pi + self.offset * self.period) / self.period) * (self.amplitude / 2) + self.center
-
 class LegMotion(object):
 	def __init__(self, startValues, endValues, time = 5.0):
 		self.startValues = startValues
