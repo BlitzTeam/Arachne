@@ -130,11 +130,11 @@ class Leg:
 		alpha = relativeDirection
 		
 		x, y = Leg.computeXY(alpha, pMax if reversedDirection else pMin)
-		oldValues = Leg.locationToAngle(x, y, Leg.groundHeight)
+		oldValues = (x, y, Leg.groundHeight)
 		
 		#lift
 		x, y = Leg.computeXY(alpha, pAve)
-		newValues = Leg.locationToAngle(x, y, Leg.liftHeight)
+		newValues = (x, y, Leg.liftHeight)
 		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.liftTime)
 		if currentTime < Leg.liftTime:
 			self.scheduleMove(oldValues, newValues, Leg.liftTime - currentTime) # Schedule the lifting motion
@@ -145,7 +145,7 @@ class Leg:
 		#forward
 		x,y = Leg.computeXY(alpha, pMin if reversedDirection else pMax)
 		oldValues = newValues
-		newValues = Leg.locationToAngle(x, y, Leg.groundHeight)
+		newValues = (x, y, Leg.groundHeight)
 		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.forwardTime)
 		if currentTime < Leg.forwardTime:
 			self.scheduleMove(oldValues, newValues, Leg.forwardTime - currentTime) # Schedule the forward motion
@@ -156,11 +156,10 @@ class Leg:
 		#pull
 		x,y = Leg.computeXY(alpha, pMax if reversedDirection else pMin)
 		oldValues = newValues
-		newValues = Leg.locationToAngle(x, y, Leg.groundHeight)
+		newValues = (x, y, Leg.groundHeight)
 		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.pullTime)
 		if currentTime < Leg.pullTime:
 			self.scheduleMove(oldValues, newValues, Leg.pullTime - currentTime) # Schedule the backward motion
-
 	
 	@staticmethod
 	def computeXY(alpha, p):
@@ -174,7 +173,7 @@ class Leg:
 	def computeServoAngles(alpha, beta, gamma): #compute the real values given to the servos
 		return (alpha + 150, -beta + 150, 180 - gamma - 30)
 	
-	def move(self): # move the leg according to the current self.move[0], does nothing if len(self.move) == 0
+	def move(self, dt = 0.0): # move the leg according to the current self.move[0], does nothing if len(self.move) == 0
 		if len(self.moves) != 0:
 			currentMove = self.moves[0]
 			if currentMove.isDone():
@@ -183,8 +182,10 @@ class Leg:
 					currentMove = self.moves[0]
 					currentMove.start()
 					
-			currentValues = currentMove.currentValues()
-			self.setAngle(currentValues[0], currentValues[1], currentValues[2])
+			currentValues = currentMove.currentValues(dt)
+			if self == Leg.mainLeg:
+				print(currentValues)
+			self.setPosition(currentValues[0], currentValues[1], currentValues[2])
 		
 	def hasScheduledMove(self):
 		return len(self.moves) != 0

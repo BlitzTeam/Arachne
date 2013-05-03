@@ -13,9 +13,8 @@ class LegMotion(object):
 	def start(self):
 		self.motionTimer.start()
 		
-	def currentValues(self):
-		currentTime = self.motionTimer.elapsedTime()
-		return LegMotion.extrapolateBatch(self.startValues, self.endValues, currentTime, self.time)
+	def currentValues(self, dt):
+		return LegMotion.extrapolateBatch(self.startValues, self.endValues, self.motionTimer.elapsedTime() + dt, self.time)
 	
 	def isDone(self):
 		return self.motionTimer.elapsedTime() > self.time

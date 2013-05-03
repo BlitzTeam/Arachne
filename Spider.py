@@ -15,6 +15,7 @@ class Spider:
 		self.currentDirection = 0.0
 		self.moving = False
 		self.turnAngle = 0.0
+		Leg.mainLeg = legs[0]
 		
 	def init(self):
 		for l in self.legs:
@@ -31,9 +32,9 @@ class Spider:
 			l.clearScheduledMoves()
 	
 		if gait == Gait.Tripod:
-			Leg.liftTime = 0.3
-			Leg.forwardTime = 0.3
-			Leg.pullTime = 0.6
+			Leg.liftTime = 0.4
+			Leg.forwardTime = 0.4
+			Leg.pullTime = 0.8
 			for i in range(len(self.legs)):
 				self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, 0.0 if i % 2 == 0 else 0.5, turnAngle=turnAngle)
 
@@ -76,17 +77,17 @@ class Spider:
 			
 			self.initLegsPosition(self.currentDirection, gait, turnAngle = self.turnAngle)
 			
-			print("Init")
-			
 			if timer != None:
 				timer.start()
-
+			
+			lastTime = time.time()
 			while self.moving and (timer == None or timer.elapsedTime() < duration):
+				dt = time.time() - lastTime
 				for l in self.legs:
-					l.move()
 					if not l.hasScheduledMove():
 						l.moveToward(self.currentDirection, turnAngle = self.turnAngle)
-					time.sleep(0.01)
+					l.move(dt)
+				lastTime = time.time()
 
 	def rotate(self, gait = Gait.Tripod, angle = None, duration = None, normalizeAngle = True):
 		rotationAngle = 90.0
