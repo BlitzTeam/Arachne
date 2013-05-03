@@ -102,6 +102,41 @@ class TerminalThread(threading.Thread):
 					print("moving toward ", float(args[1]))
 				else:
 					print("Invalid Usage.")
+			elif line == "config_ui":
+				motors = []
+				for l in self.spider.legs:
+					for m in l.motors:
+						m.compliant = True
+						motors.append(m)
+				
+				print('Put the spider in the init position')
+				print('Press any key when ready')
+				raw_input()
+				
+				initPositions = []
+				motor_id = []
+				for m in motors:
+					initPositions.append(m.getAngle())
+	
+				for i in range(18):
+					print('Move the motor %d of the leg %d and press any key when ready' % (i%3, i/3))
+					raw_input()
+					while len(motor_id) < i:
+						for k in range(len(motors)):
+							if abs(motors[k].getAngle() - initPositions[k]) > 45.0 and not k in motor_id:
+								motor_id.append(k)	
+								break
+						if len(motor_id) < i:
+							print("Error, no motion detected, try again")
+				
+				for i in range(18):
+					print("Leg(0.0, 2.6, 3.3, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d]), preferredDirection = 'right')," % (motor_id[0], motor_id[1], motor_id[2]))
+					print("Leg(90.0, 4.2, 0, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d]))," % (motor_id[3], motor_id[4], motor_id[5]))
+					print("Leg(180.0, 2.6, -3.3, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d]))," % (motor_id[6], motor_id[7], motor_id[8]))
+					print("Leg(180.0, -2.8, -3.3, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d]), preferredDirection = 'right')," % (motor_id[9], motor_id[10], motor_id[11]))
+					print("Leg(270.0, -4.3, 0, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d]))," % (motor_id[12], motor_id[13], motor_id[14]))
+					print("Leg(0.0, -2.8, 3.3, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d])))" % (motor_id[15], motor_id[16], motor_id[17]))
+			
 			elif line == "quit" or line == "":
 				pass
 			else:

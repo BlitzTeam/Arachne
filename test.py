@@ -89,8 +89,8 @@ def testWalk():
 if __name__ == '__main__':
 	#testLeg()
 	#testRelativeDirection()
-	#testWalk()
-	testMove()
+	testWalk()
+	#testMove()
 	#testGoto()
 	#testLegWalk()
 	#testInit()
