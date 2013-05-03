@@ -130,13 +130,18 @@ class TerminalThread(threading.Thread):
 							print("Error, no motion detected, try again")
 				
 				for i in range(18):
-					print("Leg(0.0, 2.6, 3.3, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d]), preferredDirection = 'right')," % (motor_id[0], motor_id[1], motor_id[2]))
-					print("Leg(90.0, 4.2, 0, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d]))," % (motor_id[3], motor_id[4], motor_id[5]))
-					print("Leg(180.0, 2.6, -3.3, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d]))," % (motor_id[6], motor_id[7], motor_id[8]))
-					print("Leg(180.0, -2.8, -3.3, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d]), preferredDirection = 'right')," % (motor_id[9], motor_id[10], motor_id[11]))
-					print("Leg(270.0, -4.3, 0, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d]))," % (motor_id[12], motor_id[13], motor_id[14]))
-					print("Leg(0.0, -2.8, 3.3, Servo(motors[%d]), Servo(motors[%d]), Servo(motors[%d])))" % (motor_id[15], motor_id[16], motor_id[17]))
-			
+					print("\t\t\t %d" % motor_id[0])
+					print("\t\t\t %d" % motor_id[1])
+					print("\t\t\t %d" % motor_id[2])
+					print("\t\t  ______________")
+					print("%d\t%d\t%d|\t \t| %d\t%d\t%d\t " % (motor_id[15], motor_id[16], motor_id[17], motor_id[3], motor_id[4], motor_id[5]))
+					print("\t\t  |\t\t|")
+					print("%d\t%d\t%d|\t \t| %d\t%d\t%d\t " % (motor_id[12], motor_id[13], motor_id[14], motor_id[6], motor_id[7], motor_id[8]))
+					print("\t\t  |_____________|")
+					print("\t\t\t %d" % motor_id[9])
+					print("\t\t\t %d" % motor_id[10])
+					print("\t\t\t %d" % motor_id[11])
+	
 			elif line == "quit" or line == "":
 				pass
 			else:
