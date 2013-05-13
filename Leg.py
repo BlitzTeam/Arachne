@@ -183,8 +183,6 @@ class Leg:
 					currentMove.start()
 					
 			currentValues = currentMove.currentValues(dt)
-			if self == Leg.mainLeg:
-				print(currentValues)
 			self.setPosition(currentValues[0], currentValues[1], currentValues[2])
 		
 	def hasScheduledMove(self):

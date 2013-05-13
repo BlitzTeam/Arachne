@@ -7,15 +7,14 @@ import time
 from constants import *
 
 class Spider:
-	walkSpeed = 100.0 / 11.0
-	rotationSpeed = 180.0 / 15.0
+	walkSpeed = 100.0 / 8.07
+	rotationSpeed = 180.0 / 10.54
 
 	def __init__(self, legs):
 		self.legs = legs
 		self.currentDirection = 0.0
 		self.moving = False
 		self.turnAngle = 0.0
-		Leg.mainLeg = legs[0]
 		
 	def init(self):
 		for l in self.legs:
@@ -32,9 +31,9 @@ class Spider:
 			l.clearScheduledMoves()
 	
 		if gait == Gait.Tripod:
-			Leg.liftTime = 0.4
-			Leg.forwardTime = 0.4
-			Leg.pullTime = 0.8
+			Leg.liftTime = 0.25
+			Leg.forwardTime = 0.25
+			Leg.pullTime = 0.5
 			for i in range(len(self.legs)):
 				self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, 0.0 if i % 2 == 0 else 0.5, turnAngle=turnAngle)
 
@@ -92,11 +91,8 @@ class Spider:
 	def rotate(self, gait = Gait.Tripod, angle = None, duration = None, normalizeAngle = True):
 		rotationAngle = 90.0
 		timer = None
-		if angle != None:
-			if normalizeAngle:
-				angle = (angle + 180.0) % 360 - 180.0
-				rotationAngle = rotationAngle if angle >= 0 else -rotationAngle
-			duration = Spider.angleToTime(angle)
+
+		duration = Spider.angleToTime(angle)
 		if duration != None:
 			timer = Timer()
 		self.initLegsPosition(rotationAngle, gait, incremental = True)

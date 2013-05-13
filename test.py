@@ -32,12 +32,9 @@ def testLeg():
 	
 def testRotate():
 	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20], timeout =  0.1)
-	for m in ctrl.motors:
-		m.max_torque = 100
-		m.moving_speed = 100
 	legs = configLegs(ctrl.motors, simulator = False)
 	spider = Spider(legs)
-	spider.rotate(gait=Gait.Tripod, angle = 180.0)
+	spider.rotate(gait=Gait.Tripod, angle = 90.0)
 	
 def testMove():
 	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20], timeout =  0.1)
@@ -47,8 +44,8 @@ def testMove():
 	legs = configLegs(ctrl.motors, simulator = False)
 	spider = Spider(legs)
 	spider.move(gait=Gait.Tripod, distance = 100.0)
-	#spider.rotate(gait=Gait.Tripod, angle = 90.0)
-	#spider.move(gait=Gait.Tripod, distance = 100.0)
+	spider.rotate(gait=Gait.Tripod, angle = 90.0)
+	spider.move(gait=Gait.Tripod, distance = 100.0)
 
 
 def testLegWalk():
@@ -84,7 +81,7 @@ def testWalk():
 		m.moving_speed = 100
 	legs = configLegs(ctrl.motors, simulator = False)
 	spider = Spider(legs)
-	spider.move(0.0, turnAngle = 0.0)
+	spider.move(0.0, turnAngle = 33.0, distance = 150.0)
 
 if __name__ == '__main__':
 	#testLeg()
@@ -94,3 +91,4 @@ if __name__ == '__main__':
 	#testGoto()
 	#testLegWalk()
 	#testInit()
+	#testRotate()

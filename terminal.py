@@ -35,7 +35,7 @@ class GamepadHandler(threading.Thread):
 	gamepad = None
 	xValue = 0.0
 	yValue = 0.0
-	maxTurnSpeed = 3.0
+	maxTurnSpeed = 5.0
 	aButtonValue = True
 
 	def __init__(self, spider):
