@@ -1,6 +1,4 @@
 import math
-import pydyn.dynamixel as dyn
-import pydyn
 import thread
 from Config import *
 import time
@@ -37,23 +35,8 @@ class Spider:
 			for i in range(len(self.legs)):
 				self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, 0.0 if i % 2 == 0 else 0.5, turnAngle=turnAngle)
 
-		elif gait == Gait.Wave:
-			Leg.liftTime = 0.3
-			Leg.forwardTime = 0.3
-			Leg.pullTime = 3.6
-			for i in range(len(self.legs)):
-				self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, float(i) / float(len(self.legs)), turnAngle=turnAngle)
-
-		elif gait == Gait.Ripple:
-			Leg.liftTime = 0.3
-			Leg.forwardTime = 0.3
-			Leg.pullTime = 1.8
-			for i in range(len(self.legs)):
-				self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, 0.0 if i % 3 == 0 else 1/3 if i % 3 == 1 else 2/3, turnAngle=turnAngle)
-
 		for l in self.legs:
 			l.move()
-			#time.sleep(0.01)
 		time.sleep(0.5)
 		for l in self.legs:
 			l.getCurrentMove().start()
@@ -140,14 +123,4 @@ class Spider:
 	@staticmethod
 	def angleToTime(angle):
 		return angle / Spider.rotationSpeed
-				
 
-if __name__ == "__main__":
-	ctrl = dyn.create_controller(verbose = True, motor_range = [0, 20])
-	legs = configLegs(ctrl.motors, simulator = False)
-	for i in range(-180, 180, 45):
-		print('Angle ' + str(i)) 
-		for l in legs:
-			print(l.orientation, l.preferredDirection, l.getRelativeDirection2(i))
-			l.setRealAngle(l.getRelativeDirection2(i)[0], 0, 0)
-		raw_input()

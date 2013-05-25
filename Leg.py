@@ -1,6 +1,4 @@
 import time
-#import pydyn.dynamixel as dyn
-#import pydyn
 import math
 from Config import *
 from Motion import *
