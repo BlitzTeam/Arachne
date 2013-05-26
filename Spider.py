@@ -24,16 +24,15 @@ class Spider:
 	def getLeg(self, id):
 		return self.legs[id]
 		
-	def initLegsPosition(self, angle, gait, turnAngle = 0.0, incremental = False): #init the legs according to the chosen gait
+	def initLegsPosition(self, angle, turnAngle = 0.0, incremental = False):
 		for l in self.legs:
 			l.clearScheduledMoves()
-	
-		if gait == Gait.Tripod:
-			Leg.liftTime = 0.25
-			Leg.forwardTime = 0.25
-			Leg.pullTime = 0.5
-			for i in range(len(self.legs)):
-				self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, 0.0 if i % 2 == 0 else 0.5, turnAngle=turnAngle)
+
+		Leg.liftTime = 5.0
+		Leg.forwardTime = 5.0
+		Leg.pullTime = 10.0
+		for i in range(len(self.legs)):
+			self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, 0.0 if i % 2 == 0 else 0.5, turnAngle=turnAngle)
 
 		for l in self.legs:
 			l.move()
@@ -41,86 +40,20 @@ class Spider:
 		for l in self.legs:
 			l.getCurrentMove().start()
 
-	def move(self, angle = 0.0, gait = Gait.Tripod, startNow = True, turnAngle = 0.0, distance = None, duration = None):
-			self.currentDirection = angle + 90.0
-			self.turnAngle = turnAngle
+	def move(self, startNow = True, turnAngle = 0.0):
 			
-			timer = None
-			if distance != None:
-				duration = Spider.distanceToTime(distance)
-			if duration != None:
-				timer = Timer()
-							
+			self.turnAngle = turnAngle						
 			if startNow:
 				self.moving = True
 			
 			while not self.moving:
 				time.sleep(0.1)
 			
-			self.initLegsPosition(self.currentDirection, gait, turnAngle = self.turnAngle)
+			self.initLegsPosition(self.currentDirection, turnAngle = self.turnAngle)
 			
-			if timer != None:
-				timer.start()
-			
-			lastTime = time.time()
-			while self.moving and (timer == None or timer.elapsedTime() < duration):
-				dt = time.time() - lastTime
+			while self.moving:
 				for l in self.legs:
 					if not l.hasScheduledMove():
-						l.moveToward(self.currentDirection, turnAngle = self.turnAngle)
-					l.move(dt)
-				lastTime = time.time()
-
-	def rotate(self, gait = Gait.Tripod, angle = None, duration = None, normalizeAngle = True):
-		rotationAngle = 90.0
-		timer = None
-
-		duration = Spider.angleToTime(angle)
-		if duration != None:
-			timer = Timer()
-		self.initLegsPosition(rotationAngle, gait, incremental = True)
-		
-		if timer != None:
-			timer.start()
-		# walk
-		while timer == None or timer.elapsedTime() < duration:
-			for i, l in enumerate(self.legs):
-				if not l.hasScheduledMove():
-					l.moveToward(rotationAngle + i * 360 / 6)
-				l.move()
-				#time.sleep(0.01)
-				
-	def goto(self, x, y, mode = True):
-		if mode == MoveMode.Arc: #TODO this case
-			if min(x,y) == x:
-				pass
-				#arc move (x,x)
-				#move (y - x)
-			else:
-				pass
-				#arc move (y,y)
-			
-			#self.move()
-		elif mode == MoveMode.Direct: #TODO inverse x and y
-			dist = math.sqrt(x**2 + y**2)
-			angle = 90.0 - math.degrees(math.atan2(y, x))
-			self.rotate(angle = angle)
-			self.move(distance = dist)
-		elif mode == MoveMode.Basic:
-			if y < 0:
-				self.rotate(angle = 180.0)
-				x = -x
-			self.move(distance = y)
-			self.rotate(angle = 90.0 if x > 0 else -90.0 if x < 0 else 0.0)
-			self.move(distance = abs(x))
-		else:
-			print("Warning: Invalid MoveMode in the Spider.goto() function")
-
-	@staticmethod
-	def distanceToTime(distance):
-		return distance / Spider.walkSpeed
-	
-	@staticmethod
-	def angleToTime(angle):
-		return angle / Spider.rotationSpeed
+						l.moveToward(0, turnAngle = self.turnAngle)
+					l.move()
 

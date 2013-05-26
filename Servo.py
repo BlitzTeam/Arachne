@@ -11,12 +11,9 @@ class Servo:
 		self.setAngle(self.initPosition)
 
 	def setAngle(self, value): #Set the servo position safely
-		#print(value)
-		self.servo_ctrl.compliant = False		
-		self.servo_ctrl.position = min(self.max_value, max(self.min_value, value + self.offset))
-
+		#self.servo_ctrl.position = min(self.max_value, max(self.min_value, value + self.offset))
+		print(value)
+		
 	def getAngle(self): #Get the current servo position
-		return self.servo_ctrl.position - self.offset
-
-	def printId(self):
-		print(self.servo_ctrl.id)
+		#return self.servo_ctrl.position - self.offset
+		return 0

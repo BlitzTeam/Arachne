@@ -17,13 +17,10 @@ class Leg:
 	pullTime = 0.6
 	motionResolution = 1.0
 
-	def __init__(self, orientation, x , y , servo_up, servo_middle, servo_down, preferredDirection = "left"):
-		self.orientation = orientation
-		self.x = x # top down view
-		self.y = y # top down view
-		self.motors = (servo_up, servo_middle, servo_down)
+	def __init__(self, servos, legType = LegType.BACK):
+		self.motors = servos
 		self.moves = []
-		self.preferredDirection = preferredDirection
+		self.legType = legType
 		
 	def initAtGroundHeight(self):
 		self.setPosition(100.0, 0, Leg.groundHeight)
@@ -41,35 +38,33 @@ class Leg:
 		realAngles = Leg.computeServoAngles(a,b,c)
 		self.setAngle(realAngles[0], realAngles[1], realAngles[2])
 		 
-	def setAngle(self, a, b, c):
-		self.motors[0].setAngle(a)
-		self.motors[1].setAngle(b)
-		self.motors[2].setAngle(c)
+	def setAngle(self, angles):
+		self.motors[0].setAngle(angles[0])
+		self.motors[1].setAngle(angles[1])
+		if LegType.FRONT:
+			self.motors[2].setAngle(angles[2])
 
 	def setPosition(self, x, y, z):
-		angles = Leg.locationToAngle(x, y, z)
-		self.setAngle(angles[0], angles[1], angles[2])
+		angles = self.locationToAngle(x, y, z)
+		self.setAngle(angles)
 
-
-	@staticmethod
-	def locationToAngle(x, y, z):		
-		alpha = 90 - math.degrees(math.atan2(x, y)) #degrees
-		p = math.sqrt(x**2 + y**2) - Leg.d
-		l = math.sqrt(p**2 + z**2)
+	def locationToAngle(self, x, y, z):		
+		if (self.legType == LegType.FRONT):
+			p = math.sqrt(x**2 + y**2)
+			alpha = math.atan2(y, x)
+			l = math.sqrt(z**2 + p**2)
+			gamma = math.acos((Leg.a**2 + Leg.b**2 - l**2) / (2 * Leg.a * Leg.b))
+			beta = math.acos((Leg.a**2 + l**2 - Leg.b**2) / (2 * Leg.a * l))
+			return (math.degrees(alpha), math.degrees(beta), math.degrees(gamma))
 		
-		o3 = math.acos(z / l) #radians
+		elif (self.legType == LegType.BACK):
+			p = x
+			l = math.sqrt(z**2 + p**2)
+			gamma = math.acos((Leg.a**2 + Leg.b**2 - l**2) / (2 * Leg.a * Leg.b))
+			beta = math.acos((Leg.a**2 + l**2 - Leg.b**2) / (2 * Leg.a * l))
+			return (math.degrees(beta), math.degrees(gamma))
 		
-		m = math.sqrt(Leg.a**2 + Leg.c**2)
-		o4 = math.acos(Leg.a / m) #radians
-		
-		o5 = math.acos((m**2 + l**2 - Leg.b**2) / (2 * m * l)) #radians
-		o6 = math.acos((m**2 + Leg.b**2 - l**2) / (2 * m * Leg.b)) #radians
-		o7 = 180 - math.degrees(o4) - 90 #degrees
-		
-		gamma = 180 - o7 - math.degrees(o6) #degrees
-		beta = math.degrees(o3) + math.degrees(o5) - 90 + math.degrees(o4) #degrees
-		
-		return Leg.computeServoAngles(alpha, beta, gamma)
+		return ()
 		
 	def getCurrentMove(self):
 		if len(self.moves) > 0:
@@ -77,88 +72,24 @@ class Leg:
 		return None
 		
 	def scheduleMove(self, startPosition, endPosition, time):
-		currentPosition = list(startPosition)
-		dx = (endPosition[0] - startPosition[0]) / Leg.motionResolution
-		dy = (endPosition[1] - startPosition[1]) / Leg.motionResolution
-		dz = (endPosition[2] - startPosition[2]) / Leg.motionResolution
-		for i in range(int(Leg.motionResolution)):
-			tmp = currentPosition[:]
-			currentPosition[0] += dx
-			currentPosition[1] += dy
-			currentPosition[2] += dz
-			self.moves.append(LegMotion(tmp, currentPosition, time / Leg.motionResolution))
+		self.moves.append(LegMotion(endPosition, startPosition, time))
 	
-	def getRelativeDirection(self, direction):
-		
-		nb = math.floor(direction // 90)
-		tmpDirection = direction % 90
-		if tmpDirection > 40 and tmpDirection <= 45:
-			tmpDirection = 40
-		if tmpDirection > 45 and tmpDirection < 50:
-			tmpDirection = 50
-		direction = tmpDirection + ( 90 * nb)
-		
-		relativeDirection = self.orientation - direction
-		relativeDirection = (relativeDirection + 180) % 360 - 180 # direction between -180 and +180 degrees
-		reversedDirection = False
-
-		if relativeDirection > 90 or (relativeDirection == 90 and self.preferredDirection == 'right'):
-			reversedDirection = True
-			relativeDirection = relativeDirection - 180.0
-		elif relativeDirection < -90 or (relativeDirection == -90 and self.preferredDirection == 'left'):
-			reversedDirection = True
-			relativeDirection = relativeDirection + 180.0
+	def moveToward(self, direction, completionRatio = 0.0, turnAngle = 0.0):		
+		if (self.legType == LegType.BACK):
+			posA = (0, 0, 100)
+			posB = (100, 0, 100)
+			posC = (100, 0, 50)
+			self.scheduleMove(posA, posB, Leg.pullTime)
+			self.scheduleMove(posB, posC, Leg.liftTime)
+			self.scheduleMove(posC, posA, Leg.forwardTime)
+		elif (self.legType == LegType.FRONT):
+			posA = (0, 50, 100)
+			posB = (100, 50, 100)
+			posC = (100, 50, 50)
+			self.scheduleMove(posA, posB, Leg.pullTime)
+			self.scheduleMove(posB, posC, Leg.liftTime)
+			self.scheduleMove(posC, posA, Leg.forwardTime)
 			
-		return relativeDirection, reversedDirection
-	
-	def moveToward(self, direction, completionRatio = 0.0, turnAngle = 0.0):
-		relativeDirection, reversedDirection = self.getRelativeDirection(direction)
-		if reversedDirection:
-			relativeDirection += turnAngle / 2
-		else:
-			relativeDirection -= turnAngle / 2
-		relativeDirection = min(max(relativeDirection, -90), 90)
-		
-		totalTime = Leg.liftTime + Leg.forwardTime + Leg.pullTime
-		currentTime = completionRatio * totalTime
-		
-		pMin = 50
-		pMax = 150
-		pAve = pMin + (pMax - pMin) / 2
-		alpha = relativeDirection
-		
-		x, y = Leg.computeXY(alpha, pMax if reversedDirection else pMin)
-		oldValues = (x, y, Leg.groundHeight)
-		
-		#lift
-		x, y = Leg.computeXY(alpha, pAve)
-		newValues = (x, y, Leg.liftHeight)
-		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.liftTime)
-		if currentTime < Leg.liftTime:
-			self.scheduleMove(oldValues, newValues, Leg.liftTime - currentTime) # Schedule the lifting motion
-			currentTime = 0.0
-		else:
-			currentTime -= Leg.liftTime
-		
-		#forward
-		x,y = Leg.computeXY(alpha, pMin if reversedDirection else pMax)
-		oldValues = newValues
-		newValues = (x, y, Leg.groundHeight)
-		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.forwardTime)
-		if currentTime < Leg.forwardTime:
-			self.scheduleMove(oldValues, newValues, Leg.forwardTime - currentTime) # Schedule the forward motion
-			currentTime = 0.0
-		else:
-			currentTime -= Leg.forwardTime
-
-		#pull
-		x,y = Leg.computeXY(alpha, pMax if reversedDirection else pMin)
-		oldValues = newValues
-		newValues = (x, y, Leg.groundHeight)
-		oldValues = LegMotion.extrapolateBatch(oldValues, newValues, currentTime, Leg.pullTime)
-		if currentTime < Leg.pullTime:
-			self.scheduleMove(oldValues, newValues, Leg.pullTime - currentTime) # Schedule the backward motion
-	
 	@staticmethod
 	def computeXY(alpha, p):
 		f = math.tan(math.radians(alpha))
@@ -169,7 +100,7 @@ class Leg:
 		
 	@staticmethod
 	def computeServoAngles(alpha, beta, gamma): #compute the real values given to the servos
-		return (alpha + 150, -beta + 150, 180 - gamma - 30)
+		return (alpha, beta, gamma)
 	
 	def move(self, dt = 0.0): # move the leg according to the current self.move[0], does nothing if len(self.move) == 0
 		if len(self.moves) != 0:

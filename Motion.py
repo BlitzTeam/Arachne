@@ -33,12 +33,4 @@ class LegMotion(object):
 		for i in range(len(startValues)):
 			res.append(LegMotion.extrapolate(startValues[i], endValues[i], currentTime, totalTime))
 		return res
-			
 
-if __name__ == '__main__':
-	s = ServoMotion(20,5,10,0.25)
-	s.start()
-	while(True):
-		print(s.currentPosition())
-		time.sleep(0.1)
-	
