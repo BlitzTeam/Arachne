@@ -28,11 +28,8 @@ class Spider:
 		for l in self.legs:
 			l.clearScheduledMoves()
 
-		Leg.liftTime = 5.0
-		Leg.forwardTime = 5.0
-		Leg.pullTime = 10.0
 		for i in range(len(self.legs)):
-			self.legs[i].moveToward(angle if not incremental else angle + 360 / 6 * i, 0.0 if i % 2 == 0 else 0.5, turnAngle=turnAngle)
+			self.legs[i].moveToward()
 
 		for l in self.legs:
 			l.move()
@@ -51,7 +48,11 @@ class Spider:
 			
 			self.initLegsPosition(self.currentDirection, turnAngle = self.turnAngle)
 			
+			currentTime = 0
 			while self.moving:
+				print(time.time() - currentTime)
+				currentTime = time.time()
+				time.sleep(0.5)
 				for l in self.legs:
 					if not l.hasScheduledMove():
 						l.moveToward(0, turnAngle = self.turnAngle)

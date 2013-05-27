@@ -5,17 +5,8 @@ from Motion import *
 from constants import *
 
 class Leg:
-	a = 60
-	c = 24
-	b = 93
-	d = 50
-	
-	groundHeight = 80.0
-	liftHeight = 50.0
-	liftTime = 0.3
-	forwardTime = 0.3
-	pullTime = 0.6
-	motionResolution = 1.0
+	groundHeight = 120.0
+	liftHeight = 100.0
 
 	def __init__(self, servos, legType = LegType.BACK):
 		self.motors = servos
@@ -48,7 +39,7 @@ class Leg:
 		angles = self.locationToAngle(x, y, z)
 		self.setAngle(angles)
 
-	def locationToAngle(self, x, y, z):		
+	def locationToAngle(self, x, y, z):
 		if (self.legType == LegType.FRONT):
 			p = math.sqrt(x**2 + y**2)
 			alpha = math.atan2(y, x)
@@ -60,8 +51,9 @@ class Leg:
 		elif (self.legType == LegType.BACK):
 			p = x
 			l = math.sqrt(z**2 + p**2)
+			o1 = math.acos(z / l)
 			gamma = math.acos((Leg.a**2 + Leg.b**2 - l**2) / (2 * Leg.a * Leg.b))
-			beta = math.acos((Leg.a**2 + l**2 - Leg.b**2) / (2 * Leg.a * l))
+			beta = math.acos((Leg.a**2 + l**2 - Leg.b**2) / (2 * Leg.a * l)) - (math.pi / 2) + o1
 			return (math.degrees(beta), math.degrees(gamma))
 		
 		return ()
@@ -74,11 +66,11 @@ class Leg:
 	def scheduleMove(self, startPosition, endPosition, time):
 		self.moves.append(LegMotion(endPosition, startPosition, time))
 	
-	def moveToward(self, direction, completionRatio = 0.0, turnAngle = 0.0):		
+	def moveToward(self, completionRatio = 0.0, turnAngle = 0.0):		
 		if (self.legType == LegType.BACK):
-			posA = (0, 0, 100)
-			posB = (100, 0, 100)
-			posC = (100, 0, 50)
+			posA = (120, 0, Leg.groundHeight)
+			posB = (50, 0, Leg.groundHeight)
+			posC = (90, 0, Leg.liftHeight)
 			self.scheduleMove(posA, posB, Leg.pullTime)
 			self.scheduleMove(posB, posC, Leg.liftTime)
 			self.scheduleMove(posC, posA, Leg.forwardTime)
@@ -110,6 +102,7 @@ class Leg:
 				if len(self.moves) != 0:
 					currentMove = self.moves[0]
 					currentMove.start()
+					print("New Move")
 					
 			currentValues = currentMove.currentValues(dt)
 			self.setPosition(currentValues[0], currentValues[1], currentValues[2])

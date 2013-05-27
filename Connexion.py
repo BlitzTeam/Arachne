@@ -1,5 +1,8 @@
+import serial
+
 class Connexion:
 	def __init__(self):
-		pass
+		self.connexion = serial.Serial('/dev/ttyACM0', 115200)
 	def setAngle(self, motorID, value):
-		pass
+		cmd = str(motorID) + ':' + str(value) + '|'
+		self.connexion.write(cmd)
